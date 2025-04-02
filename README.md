@@ -1,9 +1,13 @@
 # Projects in Data Science (2025)
+## Overview
+### result/logbook.md
+This is where we put big decisions we've made as a group to arrive at our final product, which we can then use as reminders to write up the final report.
 
-Final Assignment
+### result/todo.md
+This is where we try to split up this huge project into multiple tasks so that we can individually go and perform these tasks if they are not done yet.
 
 
-
+## Final Assignment
 #### Overview
 
 This is a template repository for the final assignment of course "Projects in Data Science." You should refer to this repository in your final hand-in.

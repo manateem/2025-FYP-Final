@@ -1,0 +1,5 @@
+- [ ] Combine manual annotation datasets (Laci)
+- [ ] Summary.md file that talks about the background, the dataset, and our history and process throughout, like in the mandatory assignment
+- [ ] 2 Column Template for Overleaf
+- [ ] Split up Overleaf into multiple .tex files with only one main
+- [ ] 
