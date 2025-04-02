@@ -4,6 +4,7 @@
 - [ ] 2 Column Template for Overleaf
 - [ ] Split up Overleaf into multiple .tex files with only one main
 - [ ] Figure out how to get Overleaf to push to a separate github
+- [ ] Write into Overleaf a introduction section of our goal and the background on the problem/issue
 - [ ] Everyone installs Zotero for citations; + group set up
 - [ ] Go through our dataset and make sure it is clean (no duplicates, etc.)
 - [ ] Segmentation of skin lesions 
