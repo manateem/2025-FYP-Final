@@ -1,7 +1,5 @@
 import random
-
 import cv2
-
 
 def readImageFile(file_path):
     # read image as an 8-bit array
