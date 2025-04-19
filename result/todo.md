@@ -7,7 +7,7 @@
 - [ ] Write into Overleaf a introduction section of our goal and the background on the problem/issue
     - [ ] Research the background of the problem to inform ourselves and write about it
 - [ ] Everyone installs Zotero for citations; + group set up
-- [ ] Go through our dataset and make sure it is clean (no duplicates, etc.)
+- [ ] Go through our dataset and make sure it is clean (no duplicates, missing values, unimportant columns, etc.)
 - [ ] Split dataset into training data and testing data and DO NOT TOUCH TESTING DATA until we have a model to use
 - [ ] Segmentation of skin lesions 
     - [ ] Removing hair
