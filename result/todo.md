@@ -18,6 +18,7 @@
         - [ ] Acccount for skin color and lesion color?
         - Could also just use previous students' masks
     - [ ] See what features we can extract and go from there
+- [ ] submit something for the optional hand-in (latest 23/04) 
 
 Reminders:
 - [ ] Acknowledgements to students from other years for extraction Python code
