@@ -9,6 +9,7 @@
 - [ ] Catch up on all exercises if not already
 - [ ] Write into Overleaf an introduction section of our goal and the background on the problem/issue
     - [ ] Research the background of the problem to inform ourselves and write about it
+- [ ] Remove duplicates
 - [ ] Segmentation of skin lesions 
     - Use previous students' masks for lesion extraction
     - [ ] Hair extraction
