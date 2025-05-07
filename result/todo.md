@@ -34,3 +34,4 @@
 
 Reminders:
 - [ ] Acknowledgements to students from other years for extraction Python code
+- [ ] Citations for what "Asymmetry, Border, Color" means in the context of skin lesions

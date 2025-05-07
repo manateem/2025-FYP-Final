@@ -142,15 +142,21 @@ def measure_regression(image):
 
     return num_pixels
 
-def get_compactness(mask):
-    # mask = color.rgb2gray(mask)
-    area = np.sum(mask)
+def get_compactness(mask, erosion_level):
+    """Measures compactness of a mask. erosion_level controls how much is eroded when attempting to measure the perimeter."""
+    mask = color.rgb2gray(mask)
+    A = np.sum(mask)
 
-    struct_el = morphology.disk(3)
+    struct_el = morphology.disk(erosion_level)
     mask_eroded = morphology.binary_erosion(mask, struct_el)
-    perimeter = np.sum(mask - mask_eroded)
+    perimeter = mask - mask_eroded
+    l = np.sum(perimeter)
 
-    return perimeter**2 / (4 * np.pi * area)
+    compactness = (4*pi*A)/(l**2)
+
+    score = round(1-compactness, 3)
+
+    return {"compactness":compactness, "score":score}
 
 def get_asymmetry(mask):
     # mask = color.rgb2gray(mask)
@@ -163,7 +169,7 @@ def get_asymmetry(mask):
     return sum(scores) / len(scores)
 
 def get_multicolor_rate(im, mask, n):
-    # mask = color.rgb2gray(mask)
+    mask = color.rgb2gray(mask)
     im = resize(im, (im.shape[0] // 4, im.shape[1] // 4), anti_aliasing=True)
     mask = resize(
         mask, (mask.shape[0] // 4, mask.shape[1] // 4), anti_aliasing=True
@@ -303,8 +309,6 @@ def find_midpoint_v1(image):
     return row_mid, col_mid
 
 def asymmetry(mask):
-    
-
     row_mid, col_mid = find_midpoint_v1(mask)
 
     upper_half = mask[:ceil(row_mid), :]
@@ -339,7 +343,10 @@ def rotation_asymmetry(mask, n: int):
 
         asymmetry_scores[degrees] = asymmetry(cutted_mask)
 
-    return asymmetry_scores
+    scores = asymmetry_scores.values()
+    averaged_score = sum(scores)/len(scores)
+
+    return {"scores": asymmetry_scores,"average":averaged_score}
 
 def mean_asymmetry(mask, rotations = 30):
     
@@ -481,24 +488,6 @@ def color_dominance(image, mask, clusters = 5, include_ratios = False):
     
     return dom_colors
 
-def compactness_score(mask):
-     
-    A = np.sum(mask)
-
-    struct_el = morphology.disk(2)
-
-    mask_eroded = morphology.binary_erosion(mask, struct_el)
-
-    perimeter = mask - mask_eroded
-
-    l = np.sum(perimeter)
-
-    compactness = (4*pi*A)/(l**2)
-
-    score = round(1-compactness, 3)
-
-    return compactness
-
 def convexity_score(mask):
 
     coords = np.transpose(np.nonzero(mask))
@@ -534,3 +523,65 @@ def get_relative_rgb_means(image, slic_segments):
     F10, F11, F12 = rgb_means_lesion - rgb_means_skin
         
     return F1, F2, F3, F10, F11, F12
+
+"""Functions Written By Manateem Below"""
+
+def get_color_uniformity(img, mask):
+    """Calculates the average color, and variance of a masked image, averaging the variances in each channel."""
+    """Assumes img that has already been masked, where non-lesion pixels are 0."""
+    
+    summed = np.array([0,0,0])
+    pixel_count = 0
+
+    columns = img.shape[0]
+    rows = img.shape[1]
+    for i in range(columns):
+        for j in range(rows):
+            if np.sum(img[i][j]) != 0:
+                summed += img[i][j]
+                pixel_count += 1
+    average = summed/pixel_count
+
+    variance_score = np.array([0,0,0]).astype('float64')
+    for i in range(columns):
+        for j in range(rows):
+            if np.sum(img[i][j]) != 0:
+                variance_score += np.power((img[i][j]-average),2)
+    variance_score /= pixel_count
+
+    return {"score":np.average(variance_score),"average_color":average}
+
+def significant_color_count(img, mask, significance=0.05):
+    """DOES NOT WORK AS INTENDED CURRENTLY, WIP"""
+    
+    """Uses kmeans to procedurally increase the number of colors until a color becomes 'insignificant', in which the number of colors before this point is returned."""
+    """Assumes img that has already been masked, where non-lesion pixels are 0."""
+    """Significance dictates level at which below a color would be considered insignificant."""
+
+    safe_limit = 20 # just in case any unfortunate loop shenanigans occur
+
+    mask = color.rgb2gray(mask)
+    # (thresh, im_bw) = cv2.threshold(mask, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    # pixel_count = np.sum(im_bw)
+
+    pixel_count = np.sum(mask)
+
+    success_count = 1
+
+    for n in range(safe_limit):
+        n_colors = n+1
+        pixels = np.float32(img.reshape(-1, 3))
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, .1)
+        flags = cv2.KMEANS_RANDOM_CENTERS
+
+        _, labels, palette = cv2.kmeans(pixels, n_colors, None, criteria, 10, flags)
+        _, counts = np.unique(labels, return_counts=True)
+
+        for count in counts:
+            if count/pixel_count < significance:
+                return success_count
+        success_count += 1
+            
+    return success_count
+    
+        
