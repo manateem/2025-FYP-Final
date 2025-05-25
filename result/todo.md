@@ -16,6 +16,7 @@
         - [ ] Account for different hair colors?
         - [ ] Account for amount of hair
         - [ ] Utilize hair amount annotations to see how well our hair feature extraction performs
+        - [ ] Update data exploration section in Overleaf to reflect changes made, if any
 - [ ] Classification
     - [ ] ABC Classifier
     - [ ] Extended Classifier
