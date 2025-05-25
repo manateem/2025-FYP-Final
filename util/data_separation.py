@@ -5,7 +5,6 @@ the files listed in result/training_data.txt from data/ to data/training
 import os, shutil
 
 PROJECT_DIR = os.getcwd()
-print(PROJECT_DIR)
 # find project directory
 while not PROJECT_DIR.endswith("2025-FYP-Final"):
     PROJECT_DIR = os.path.dirname(PROJECT_DIR)
@@ -65,4 +64,4 @@ if __name__ == "__main__":
     print("moving training files....")
     move_training_files()
     print("moving test files....")
-    # move_test_files()
+    move_test_files()
