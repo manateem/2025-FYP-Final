@@ -6,9 +6,9 @@
 - [x] Split dataset into training data and testing data and DO NOT TOUCH TESTING DATA until we have a model to use
 - [x] submit something for the optional hand-in (latest 23/04) 
 
-- [ ] Catch up on all exercises if not already
-- [ ] Write into Overleaf an introduction section of our goal and the background on the problem/issue
-    - [ ] Research the background of the problem to inform ourselves and write about it
+- [ ] ~~Catch up on all exercises if not already~~
+- [x] Write into Overleaf an introduction section of our goal and the background on the problem/issue
+    - [x] Research the background of the problem to inform ourselves and write about it
 - [ ] Remove duplicates
 - [ ] Segmentation of skin lesions 
     - Use previous students' masks for lesion extraction
