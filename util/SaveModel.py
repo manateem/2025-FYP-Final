@@ -1,7 +1,7 @@
 import joblib
 import os
 def saveModel(model, modelName, directory):
-    if ".pkl" not in modelName[-4:]:
+    if ".pkl" not in modelName:
         modelName += ".pkl"
     filepath = os.path.join(directory, modelName)
     if not os.path.exists(directory):
