@@ -38,7 +38,7 @@ def getHair(img_org, kernel_size=25, threshold=10):
 
 
 def amountOfHairFeature(img_org, black_threshold: int = 50) -> float:
-    img_gray = cv2.cvtColor(img_org, cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.cvtColor(img_org, cv2.COLOR_RGB2GRAY)
 
     _, thresh = cv2.threshold(img_gray, black_threshold, 255, cv2.THRESH_BINARY)
 

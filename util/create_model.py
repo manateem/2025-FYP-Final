@@ -1,6 +1,8 @@
 from typing import Callable, List
 import pandas as pd
 import numpy as np
+from inpaint_util import removeHair
+from feature_extract_ex import asymmetry
 from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
@@ -17,14 +19,18 @@ MODEL_DIR = p("testmodels/")
 
 DF  = pd.read_csv(p("data/metadata.csv"))
 
-TRAINING_IMAGES_DIR = p("data/training")
+TRAINING_IMAGES_DIR = p("data/images")
+MASKS_DIR = p("data/masks")
 
-# limit data in data frame only to what's in the training folder
-training_images = pd.DataFrame(data = {
-    "img_id": os.listdir(TRAINING_IMAGES_DIR)
+# limit data in data frame only to images which have a mask
+masked_images = pd.DataFrame(data = {
+    "img_id": [x.replace("_mask.png", ".png") for x in os.listdir(MASKS_DIR)]
 })
 
-DF = pd.merge(DF, training_images, on='img_id', how='inner')
+DF = pd.merge(DF, masked_images, on='img_id', how='inner')
+
+# DELETE LATER: take only the first 20 items to speed up debugging
+DF = DF.head(20)
 print(DF)
 
 groups = DF["patient_id"].unique()
@@ -41,8 +47,8 @@ def extractFeaturesFromImage(record):
     Pass this function to DF.apply() with axis=1
 
     TODO:
-        - [ ] Extract feature "hair"
-        - [ ] Save hairless image to data/tmp
+        - [x] Extract feature "hair"
+        - [ ] Save a copy of the image after hair's been removed
         - [ ] Extract feature "asymmetry"
         - [ ] Extract feature "border"
         - [ ] Extract feature "color"
@@ -59,9 +65,22 @@ def extractFeaturesFromImage(record):
         return record
 
     image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # hair feature
     record["feat_hair"] = amountOfHairFeature(image)
+
+    # remove hair
+    _, _, image = removeHair(image, image_gray)
+    # load the image mask
+    image_mask_filename = record["img_id"].replace(".png", "_mask.png")
+    image_mask_path = os.path.join(MASKS_DIR, image_mask_filename)
+    image_mask = cv2.imread(image_mask_path)
+
+    # calculate asymmetry
+    record["feat_asymmetry"] = asymmetry(image_mask)
+
 
     return record
 
