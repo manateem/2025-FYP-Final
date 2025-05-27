@@ -9,7 +9,8 @@ import os
 import cv2
 import feature_extract_ex as features
 
-TRAINING_IMAGES_DIR = p("data/images")
+TRAINING_IMAGES_DIR = p("data/noHair") #NOW THE IMAGES WITH NO HAIR
+#NOHAIR_DIR = p("data/noHair")
 MASKS_DIR = p("data/masks")
 
 
@@ -36,14 +37,14 @@ def extractFeaturesFromImage(record):
         return record
 
     image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # hair feature
-    record["feat_hair"] = amountOfHairFeature(image)
+    #record["feat_hair"] = amountOfHairFeature(image_rgb)
 
     # remove hair
-    _, _, image = removeHair(image, image_gray)
+    #_, _, image = removeHair(image, image_gray)
     # load the image mask
     image_mask_filename = record["img_id"].replace(".png", "_mask.png")
     image_mask_path = os.path.join(MASKS_DIR, image_mask_filename)
@@ -63,7 +64,7 @@ def extractFeaturesFromImage(record):
         record["feat_border_irregularity"] = float("nan")
     
     try:
-        record["feat_color"] = features.get_multicolor_rate(image, image_mask, 2)
+        record["feat_color"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
     except Exception as e:
         print(f"ERROR: {e}")
         record["feat_color"] = float("nan")
@@ -93,14 +94,14 @@ def loadDataFrameWithFeatures(
     :returns: A pd.DataFrame with the data from the metadata.csv,
     and the features extracted from the images.
     """
-    DF  = pd.read_csv(p("data/metadata.csv"))
+    DF  = pd.read_csv(p("result/dataset.csv"))
 
     # limit data in data frame only to images which have a mask
-    masked_images = pd.DataFrame(data = {
-        "img_id": [x.replace("_mask.png", ".png") for x in os.listdir(MASKS_DIR)]
-    })
+    # masked_images = pd.DataFrame(data = {
+    #     "img_id": [x.replace("_mask.png", ".png") for x in os.listdir(MASKS_DIR)]
+    # })
 
-    DF = pd.merge(DF, masked_images, on='img_id', how='inner')
+    #DF = pd.merge(DF, masked_images, on='img_id', how='inner')
 
     if isinstance(truncate, int):
         DF = DF.head(truncate)
@@ -115,4 +116,4 @@ def loadDataFrameWithFeatures(
 
 
 if __name__ == "__main__":
-    DF = loadDataFrameWithFeatures(write_csv_to="result/dataset.csv")
+    DF = loadDataFrameWithFeatures(write_csv_to="result/dataset3.csv",)

@@ -8,8 +8,8 @@ from constants import p
 MODEL_DIR = p("test/")
 MODEL_NAME = "modelKNN.pkl"
 
-DF = loadDataFrameWithFeatures(write_csv_to="result/dataset.csv")
-
+DF = loadDataFrameWithFeatures(write_csv_to="result/dataset.csv") #THE THING WE WANT TO TRAIN ON
+groups = DF['patient_id']
 baseline_feats = [col for col in DF.columns if col.startswith("feat_")]
 print(baseline_feats)
 x_all = DF[baseline_feats]
@@ -17,7 +17,7 @@ y_all = DF["biopsed"]
 
 x_train, x_test, y_train, y_test = train_test_split(x_all, y_all, test_size=0.3, random_state=42)
 print(y_train)
-gkf = GroupKFold(5)
+gkf = GroupKFold(n_splits=5)
 model = KNeighborsClassifier(n_neighbors=5)
 model.fit(x_train,y_train)
 
