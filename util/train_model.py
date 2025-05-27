@@ -8,7 +8,7 @@ from constants import p
 MODEL_DIR = p("test/")
 MODEL_NAME = "modelKNN.pkl"
 
-DF = loadDataFrameWithFeatures(truncate=20)
+DF = loadDataFrameWithFeatures(write_csv_to="result/dataset.csv")
 
 baseline_feats = [col for col in DF.columns if col.startswith("feat_")]
 print(baseline_feats)

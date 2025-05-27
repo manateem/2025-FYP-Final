@@ -113,3 +113,6 @@ def loadDataFrameWithFeatures(
 
     return DF
 
+
+if __name__ == "__main__":
+    DF = loadDataFrameWithFeatures(write_csv_to="result/dataset.csv")
