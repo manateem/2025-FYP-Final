@@ -2,7 +2,7 @@ from typing import Callable, List
 import pandas as pd
 import numpy as np
 from inpaint_util import removeHair
-from feature_extract_ex import asymmetry
+from feature_extract_ex import asymmetry, measure_streaks
 from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
@@ -48,9 +48,9 @@ def extractFeaturesFromImage(record):
 
     TODO:
         - [x] Extract feature "hair"
-        - [ ] Save a copy of the image after hair's been removed
-        - [ ] Extract feature "asymmetry"
-        - [ ] Extract feature "border"
+        - [x] Save a copy of the image after hair's been removed
+        - [x] Extract feature "asymmetry"
+        - [x] Extract feature "border"
         - [ ] Extract feature "color"
     
     REMEMBER:
@@ -80,6 +80,7 @@ def extractFeaturesFromImage(record):
 
     # calculate asymmetry
     record["feat_asymmetry"] = asymmetry(image_mask)
+    record["feat_border_irregularity"] = measure_streaks(image)
 
 
     return record
