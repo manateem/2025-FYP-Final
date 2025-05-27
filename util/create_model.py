@@ -2,7 +2,6 @@ from typing import Callable, List
 import pandas as pd
 import numpy as np
 from inpaint_util import removeHair
-from feature_extract_ex import asymmetry, measure_streaks
 from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
@@ -12,6 +11,8 @@ from constants import p
 import random
 import os
 import cv2
+import feature_extract_ex as features
+from lesion_mask import extract_mask
 
 MODEL_NAME = "model.pkl"
 MODEL_DIR = p("testmodels/")
@@ -79,8 +80,9 @@ def extractFeaturesFromImage(record):
     image_mask = cv2.imread(image_mask_path)
 
     # calculate asymmetry
-    record["feat_asymmetry"] = asymmetry(image_mask)
-    record["feat_border_irregularity"] = measure_streaks(image)
+    record["feat_asymmetry"] = features.rotation_asymmetry(image_mask, 5)["average"]
+    record["feat_border_irregularity"] = features.get_compactness(image_mask, 2)["score"]
+    record["feat_color"] = features.get_multicolor_rate(image, image_mask, 2)
 
 
     return record
