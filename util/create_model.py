@@ -8,6 +8,8 @@ from SaveModel import saveModel
 from hairFeature import amountOfHairFeature
 from constants import p
 import random
+import os
+import cv2
 
 MODEL_NAME = "model.pkl"
 MODEL_DIR = p("testmodels/")
@@ -16,6 +18,14 @@ MODEL_DIR = p("testmodels/")
 DF  = pd.read_csv(p("data/metadata.csv"))
 
 TRAINING_IMAGES_DIR = p("data/training")
+
+# limit data in data frame only to what's in the training folder
+training_images = pd.DataFrame(data = {
+    "img_id": os.listdir(TRAINING_IMAGES_DIR)
+})
+
+DF = pd.merge(DF, training_images, on='img_id', how='inner')
+print(DF)
 
 groups = DF["patient_id"].unique()
 DF['biopsed'] = DF['biopsed'].astype(int)
@@ -32,12 +42,26 @@ def extractFeaturesFromImage(record):
 
     TODO:
         - [ ] Extract feature "hair"
-        - [ ] Save old hairy image, override current file with the one with hair removed
+        - [ ] Save hairless image to data/tmp
         - [ ] Extract feature "asymmetry"
         - [ ] Extract feature "border"
         - [ ] Extract feature "color"
+    
+    REMEMBER:
+        - [ ] delete directory "data/tmp" after the features have been extracted
     """
-    record["feat_test"] = random.random()
+    image_path = os.path.join(TRAINING_IMAGES_DIR, record["img_id"])
+    print(f"Opening image {image_path}...")
+
+    # it's possible that the image is not in the training dataset -> skip it then
+    if not os.path.isfile(image_path):
+        print(f"{image_path}: no such file, continuing....")
+        return record
+
+    image = cv2.imread(image_path)
+
+    # hair feature
+    record["feat_hair"] = amountOfHairFeature(image)
 
     return record
 
@@ -46,23 +70,8 @@ def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
     return data_frame.apply(extractFeaturesFromImage, axis=1)
 
 
-
-# # add 
-# def addFeatures(features: list[Callable[[str], float]] ) -> pd.DataFrame:
-#     newDF = DF.copy()
-#     for feature in features:
-#         col_name = feature.__name__
-#         newDF[f"feat_{col_name}"] = newDF["img_id"].apply(feature)
-        
-#     return newDF
-
-# #testing
-# def test(i):
-#     return np.random.rand()
-# functions = [test] # FUNCTIONS HERE
-
 df = addFeatures(DF)
-print(df)
+df.to_csv(p("data/dataset.csv"), index=False)
 
 baseline_feats = [col for col in df.columns if col.startswith("feat_")]
 print(baseline_feats)
@@ -83,7 +92,6 @@ print("Confusion Matrix:\n", cm)
 print(recall_score(y_test,y_pred))
 # save the model
 saveModel(model, MODEL_NAME, MODEL_DIR)
-print(MODEL_DIR)
 
 
 

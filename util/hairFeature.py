@@ -1,15 +1,15 @@
 import cv2
 import numpy as np
+
 def count_white_percentage(image, threshold=240):
     """
     Counts the number of white pixels in a grayscale image.
 
-    Parameters:
-        image: the image
-        threshold (int): Intensity threshold to consider a pixel as "white".
+    :param image: the image
+    :param threshold: (int) Intensity threshold to consider a pixel as "white".
 
-    Returns:
-        float: Percentage of white pixels in the image.
+    
+    :returns: Percentage of white pixels in the image.
     """
     # Load the image in grayscale
     # Create a mask of pixels above the threshold
@@ -35,11 +35,18 @@ def getHair(img_org, kernel_size=25, threshold=10):
     _, thresh = cv2.threshold(hat_img, threshold, 255, cv2.THRESH_BINARY)
     
     return thresh
-def amountOfHairFeature(img_org):
-    #extract hair
-    hair = getHair(img_org)
-    # get the amount of white pixels
-    return count_white_percentage(hair)
+
+
+def amountOfHairFeature(img_org, black_threshold: int = 50) -> float:
+    img_gray = cv2.cvtColor(img_org, cv2.COLOR_BGR2GRAY)
+
+    _, thresh = cv2.threshold(img_gray, black_threshold, 255, cv2.THRESH_BINARY)
+
+    count_black_pxls = np.sum(thresh == 0)
+
+    return (count_black_pxls / thresh.size) * 10
+
+
 if __name__ == "__main__":
     # test with random noise
     image = np.random.randint(0, 256, (256, 256, 3), dtype=np.uint8)
