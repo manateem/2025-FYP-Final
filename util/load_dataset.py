@@ -50,9 +50,23 @@ def extractFeaturesFromImage(record):
     image_mask = cv2.imread(image_mask_path)
 
     # calculate asymmetry
-    record["feat_asymmetry"] = features.rotation_asymmetry(image_mask, 5)["average"]
-    record["feat_border_irregularity"] = features.get_compactness(image_mask, 2)["score"]
-    record["feat_color"] = features.get_multicolor_rate(image, image_mask, 2)
+    try:
+        record["feat_asymmetry"] = features.rotation_asymmetry(image_mask, 5)["average"]
+    except Exception as e:
+        print(f"ERROR: {e}")
+        record["feat_asymmetry"] = float("nan")
+    
+    try:
+        record["feat_border_irregularity"] = features.get_compactness(image_mask, 2)["score"]
+    except Exception as e:
+        print(f"ERROR: {e}")
+        record["feat_border_irregularity"] = float("nan")
+    
+    try:
+        record["feat_color"] = features.get_multicolor_rate(image, image_mask, 2)
+    except Exception as e:
+        print(f"ERROR: {e}")
+        record["feat_color"] = float("nan")
 
 
     return record
