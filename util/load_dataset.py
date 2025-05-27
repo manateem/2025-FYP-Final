@@ -2,42 +2,15 @@ from typing import Callable, List
 import pandas as pd
 import numpy as np
 from inpaint_util import removeHair
-from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score
-from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
-from sklearn.neighbors import KNeighborsClassifier
-from SaveModel import saveModel
 from hairFeature import amountOfHairFeature
 from constants import p
 import random
 import os
 import cv2
 import feature_extract_ex as features
-from lesion_mask import extract_mask
-
-MODEL_NAME = "model.pkl"
-MODEL_DIR = p("testmodels/")
-
-
-DF  = pd.read_csv(p("data/metadata.csv"))
 
 TRAINING_IMAGES_DIR = p("data/images")
 MASKS_DIR = p("data/masks")
-
-# limit data in data frame only to images which have a mask
-masked_images = pd.DataFrame(data = {
-    "img_id": [x.replace("_mask.png", ".png") for x in os.listdir(MASKS_DIR)]
-})
-
-DF = pd.merge(DF, masked_images, on='img_id', how='inner')
-
-# DELETE LATER: take only the first 20 items to speed up debugging
-DF = DF.head(20)
-print(DF)
-
-groups = DF["patient_id"].unique()
-DF['biopsed'] = DF['biopsed'].astype(int)
-#metadata = metadata.dropna()
-y_all = DF["biopsed"]
 
 
 # Feature extraction
@@ -52,10 +25,7 @@ def extractFeaturesFromImage(record):
         - [x] Save a copy of the image after hair's been removed
         - [x] Extract feature "asymmetry"
         - [x] Extract feature "border"
-        - [ ] Extract feature "color"
-    
-    REMEMBER:
-        - [ ] delete directory "data/tmp" after the features have been extracted
+        - [x] Extract feature "color"
     """
     image_path = os.path.join(TRAINING_IMAGES_DIR, record["img_id"])
     print(f"Opening image {image_path}...")
@@ -92,30 +62,40 @@ def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
     return data_frame.apply(extractFeaturesFromImage, axis=1)
 
 
-df = addFeatures(DF)
-df.to_csv(p("data/dataset.csv"), index=False)
+def loadDataFrameWithFeatures(
+        write_csv_to: str | None = "data/dataset.csv",
+        truncate: int | None = None) -> pd.DataFrame:
+    """
+    Load a data frame from the metadata, with new
+    columns for the data extracted from the image files.
 
-baseline_feats = [col for col in df.columns if col.startswith("feat_")]
-print(baseline_feats)
-x_all = df[baseline_feats]
+    :param write_csv_to: If specified, save the data frame as
+    a CSV file to the specified file. By default, the CSV is saved
+    to data/dataset.csv.
+    :param truncate: Use this for debugging. If specified, only
+    the first `n` entries will be loaded. Leave as None during
+    final model training.
 
-x_train, x_test, y_train, y_test = train_test_split(x_all, y_all, test_size=0.3, random_state=42)
-print(y_train)
-gkf = GroupKFold(5)
-model = KNeighborsClassifier(n_neighbors=5)
-model.fit(x_train,y_train)
+    :returns: A pd.DataFrame with the data from the metadata.csv,
+    and the features extracted from the images.
+    """
+    DF  = pd.read_csv(p("data/metadata.csv"))
 
-y_pred = model.predict(x_test)
-acc = accuracy_score(y_test, y_pred)
-cm = confusion_matrix(y_test, y_pred)
+    # limit data in data frame only to images which have a mask
+    masked_images = pd.DataFrame(data = {
+        "img_id": [x.replace("_mask.png", ".png") for x in os.listdir(MASKS_DIR)]
+    })
 
-print("Test Accuracy:", acc)
-print("Confusion Matrix:\n", cm)
-print(recall_score(y_test,y_pred))
-# save the model
-saveModel(model, MODEL_NAME, MODEL_DIR)
+    DF = pd.merge(DF, masked_images, on='img_id', how='inner')
 
+    if isinstance(truncate, int):
+        DF = DF.head(truncate)
+    
+    DF = addFeatures(DF)
 
+    # write to a .csv file if specified
+    if isinstance(write_csv_to, str):
+        DF.to_csv(p(write_csv_to), index=False)
 
-
+    return DF
 

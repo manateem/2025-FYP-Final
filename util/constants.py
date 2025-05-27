@@ -16,5 +16,5 @@ while not PROJECT_DIR.endswith(PROJECT_NAME):
 
 
 def p(path: str) -> str:
-    """ Create absolute path based on a relative path from the project root """
+    """ Create absolute path based on a relative path to the project root """
     return os.path.join(PROJECT_DIR, path)
