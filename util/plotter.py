@@ -81,10 +81,35 @@ def generate_plots(model_data: list[dict[str, Any]]):
         subplot.text(1, 1, conf_matrix[1, 1],
                     ha="center", va="center", color='w')
     
-    # fig.set_title("Confusion matrices")
+    fig.suptitle("Confusion matrices")
 
     plt.show()
 
+
+    # plot the ROC curves
+    fig, axs = plt.subplots(NUM_PLOT_ROWS, NUM_PLOT_COLUMNS)
+    for i, model in enumerate(model_data):
+        row_idx = i // NUM_PLOT_COLUMNS
+        col_idx = i % NUM_PLOT_COLUMNS
+        subplot = axs[row_idx, col_idx]
+
+        fpr = model["falsePositiveRate"]
+        tpr = model["truePositiveRate"]
+        roc_auc = model["areaUnderCurve"]
+        model_name = model["name"]
+        num_features = model["numFeatures"]
+
+        subplot.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+        subplot.plot([0, 1], [0, 1], color='navy', lw=1, linestyle='--')
+        subplot.set_xlabel('False Positive Rate')
+        subplot.set_ylabel('True Positive Rate')
+        subplot.set_title(f"{model_name} - ROC Curve ({num_features} features)")
+        subplot.legend(loc="lower right")
+        subplot.grid(True)
+
+    fig.suptitle("ROC curves")
+
+    plt.show()
 
 
 if __name__ == "__main__":
