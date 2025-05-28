@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score, roc_curve, auc
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -23,15 +23,29 @@ class ModelData:
     model: Any
     accuracy: int
     confusion_matrix: NDArray
+    false_positive_rate: NDArray
+    true_positive_rate: NDArray
+    area_under_curve: float
+    features: list[str]
+    feature_importances: NDArray | None
+
+    @property
+    def num_features(self):
+        return len(self.features)
 
     def to_json(self):
         return json.dumps({
             "accuracy": self.accuracy,
-            "confusionMatrix": self.confusion_matrix.tolist()
+            "confusionMatrix": self.confusion_matrix.tolist(),
+            "falsePositiveRate": self.false_positive_rate.tolist(),
+            "truePositiveRate": self.true_positive_rate.tolist(),
+            "areaUnderCurve": self.area_under_curve,
+            "features": self.features,
+            "featureImportances": self.feature_importances.tolist() if self.feature_importances is not None else None
         }, indent=4)
 
 
-def train_knn_model(x_train, x_test, y_train, y_test, n_neighbors = 5) -> ModelData:
+def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5) -> ModelData:
     x_train, x_test = normalize(x_train), normalize(x_test)
 
     knn_model = KNeighborsClassifier(n_neighbors=n_neighbors)
@@ -42,14 +56,22 @@ def train_knn_model(x_train, x_test, y_train, y_test, n_neighbors = 5) -> ModelD
     knn_confusion_matrix = confusion_matrix(y_test, y_pred)
     knn_accuracy = accuracy_score(y_test, y_pred)
 
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
+    roc_auc = auc(false_positive_rate, true_positive_rate)
+
     return ModelData(
         model=knn_model,
         accuracy=knn_accuracy,
-        confusion_matrix=knn_confusion_matrix
+        confusion_matrix=knn_confusion_matrix,
+        false_positive_rate=false_positive_rate,
+        true_positive_rate=true_positive_rate,
+        area_under_curve=roc_auc,
+        features=features,
+        feature_importances=None
     )
 
 
-def train_decision_tree(x_train, x_test, y_train, y_test):
+def train_decision_tree(x_train, x_test, y_train, y_test, features):
     decision_tree_model = DecisionTreeClassifier()
     decision_tree_model = decision_tree_model.fit(x_train, y_train)
 
@@ -58,14 +80,24 @@ def train_decision_tree(x_train, x_test, y_train, y_test):
     tree_confusion_matrix = confusion_matrix(y_test, y_pred)
     tree_accuracy = accuracy_score(y_test, y_pred)
 
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
+    roc_auc = auc(false_positive_rate, true_positive_rate)
+
+    feature_importances = decision_tree_model.feature_importances_
+
     return ModelData(
         model=decision_tree_model,
         accuracy=tree_accuracy,
-        confusion_matrix=tree_confusion_matrix
+        confusion_matrix=tree_confusion_matrix,
+        false_positive_rate=false_positive_rate,
+        true_positive_rate=true_positive_rate,
+        area_under_curve=roc_auc,
+        features=features,
+        feature_importances=feature_importances
     )
 
 
-def train_logistic_regression(x_train, x_test, y_train, y_test):
+def train_logistic_regression(x_train, x_test, y_train, y_test, features):
     x_train, x_test = normalize(x_train), normalize(x_test)
 
     logistic_model = LogisticRegression(solver="liblinear")  # liblinear is good for small binary datasets
@@ -76,10 +108,18 @@ def train_logistic_regression(x_train, x_test, y_train, y_test):
     logistic_confusion_matrix = confusion_matrix(y_test, y_pred)
     logistic_accuracy = accuracy_score(y_test, y_pred)
 
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
+    roc_auc = auc(false_positive_rate, true_positive_rate)
+
     return ModelData(
         model=logistic_model,
         accuracy=logistic_accuracy,
-        confusion_matrix=logistic_confusion_matrix
+        confusion_matrix=logistic_confusion_matrix,
+        false_positive_rate=false_positive_rate,
+        true_positive_rate=true_positive_rate,
+        area_under_curve=roc_auc,
+        features=features,
+        feature_importances=None
     )
 
 
@@ -101,10 +141,9 @@ def train_models(
     )
 
     knn_model_data = train_knn_model(
-        x_train,
-        x_test,
-        y_train,
-        y_test
+        x_train, x_test,
+        y_train, y_test,
+        features
     )
 
     saveModel(knn_model_data.model, save_knn_model_to, KNN_MODEL_DIR)
@@ -113,7 +152,8 @@ def train_models(
 
     decision_tree_model_data = train_decision_tree(
         x_train, x_test,
-        y_train, y_test
+        y_train, y_test,
+        features
     )
 
     saveModel(decision_tree_model_data.model, save_tree_model_to, DTREE_MODEL_DIR)
@@ -122,7 +162,8 @@ def train_models(
 
     logistic_model_data = train_logistic_regression(
         x_train, x_test, 
-        y_train, y_test
+        y_train, y_test,
+        features
     )
     saveModel(logistic_model_data.model, save_logistic_model_to, LR_MODEL_DIR)
     with open(os.path.join(LR_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
