@@ -543,15 +543,15 @@ def get_color_uniformity(img, mask):
                 pixel_count += 1
     average = summed/pixel_count
 
-    variance_score = np.array([0,0,0]).astype('float64')
-    for i in range(columns):
-        for j in range(rows):
-            if np.sum(masked_img[i][j]) != 0:
-                variance_score += np.power((masked_img[i][j]-average),2)
-    variance_score = np.sqrt(variance_score)
-    variance_score /= pixel_count
+    # variance_score = np.array([0,0,0]).astype('float64')
+    # for i in range(columns):
+    #     for j in range(rows):
+    #         if np.sum(masked_img[i][j]) != 0:
+    #             variance_score += np.power((masked_img[i][j]-average),2)
+    # variance_score = np.sqrt(variance_score)
+    # variance_score /= pixel_count
 
-    return {"score":np.average(variance_score),"average_color":average}
+    return {"score":np.average(0),"average_color":average}
 
 def significant_color_count(img, mask, significance=0.05):
     """DOES NOT WORK AS INTENDED CURRENTLY, WIP"""
@@ -587,31 +587,43 @@ def significant_color_count(img, mask, significance=0.05):
     return success_count
     
 def convexity_metrics(mask):
-    mask_gray = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
-    ret,thresh = cv2.threshold(mask_gray, 127, 255,0)
-    contours,hierarchy = cv2.findContours(thresh,2,1)
-    cnt = contours[0]
-
-    distances = []
-    for i in range(defects.shape[0]):
-        s,e,f,d = defects[i,0]
-        distances.append(d)
+    try:
+        mask_gray = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
+        ret,thresh = cv2.threshold(mask_gray, 127, 255,0)
+        contours,hierarchy = cv2.findContours(thresh,2,1)
+        cnt = contours[0]
+        hull = cv2.convexHull(cnt,returnPoints = False)
+        defects = cv2.convexityDefects(cnt,hull)
+        distances = []
+        for i in range(defects.shape[0]):
+            _,_,_,d = defects[i,0]
+            distances.append(d)
+    except:
+        return {"variance":0, "average":0, "max":0, "score":0}
     avg = sum(distances)/len(distances)
 
     var = 0
     for i in range(len(distances)):
         var += (avg - i)**2
 
-    return {"variance":var, "average":avg, "max":max(distances), "score":convexity_score(mask)}
+    return {"variance":var, "average":avg, "max":max(distances), "score":0}
 
 def texture_analysis(img, mask):
-    masked_img = img.copy()
-    masked_img[mask==0] = 0
+    try:
+        gray_img = rgb2gray(img)  # Now gray_img is 2D with float values in [0, 1]
 
-    glcm = graycomatrix(image, distances=[1], angles=[0], levels=256, symmetric=True, normed=True)
-    contrast = graycoprops(glcm, 'contrast')[0, 0]
-    energy = graycoprops(glcm, 'energy')[0, 0]
-    homogeneity = graycoprops(glcm, 'homogeneity')[0, 0]
+        mask = mask[:, :, 0]
+        gray_img = (gray_img * 255).astype(np.uint8)
+
+        # Apply the mask
+        masked_img = gray_img.copy()
+        masked_img[mask == 0] = 0
+        glcm = graycomatrix(masked_img, distances=[1], angles=[0], levels=256, symmetric=True, normed=True)
+        contrast = graycoprops(glcm, 'contrast')[0, 0]
+        energy = graycoprops(glcm, 'energy')[0, 0]
+        homogeneity = graycoprops(glcm, 'homogeneity')[0, 0]
+    except:
+        return None
 
 
     return {"glcm_contrast": contrast, "glcm_energy":energy, "glcm_homogeneity":homogeneity}
@@ -634,17 +646,17 @@ def color_metrics(img, mask):
     masked_gray = cv2.cvtColor(masked_img,cv2.COLOR_BGR2GRAY)
 
     # Redness
-    array_size = int(len(mask[mask != 0])*0.001)
-    print(array_size)
-    arr = [0]*array_size
-    columns = masked_img.shape[0]
-    rows = masked_img.shape[1]
-    for i in range(columns):
-        for j in range(rows):
-            if np.sum(masked_img[i][j]) != 0:
-                if arr[0] < masked_img[i][j][0]:
-                    arr[0] = masked_img[i][j][0]
-                    insertionSort(arr)
-    avg_max_redness = sum(arr)/len(arr)
+    # array_size = int(len(mask[mask != 0])*0.001)
+    # print(array_size)
+    # arr = [0]*array_size
+    # columns = masked_img.shape[0]
+    # rows = masked_img.shape[1]
+    # for i in range(columns):
+    #     for j in range(rows):
+    #         if np.sum(masked_img[i][j]) != 0:
+    #             if arr[0] < masked_img[i][j][0]:
+    #                 arr[0] = masked_img[i][j][0]
+    #                 insertionSort(arr)
+    # avg_max_redness = sum(arr)/len(arr)
 
-    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min(), "avg_max_redness": avg_max_redness}
+    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min(), "avg_max_redness": 0}

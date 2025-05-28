@@ -11,7 +11,8 @@ from utility import extract_lesion_mask
 TRAINING_IMAGES_DIR = p("data/noHair") #NOW THE IMAGES WITH NO HAIR
 #NOHAIR_DIR = p("data/noHair")
 MASKS_DIR = p("data/masks")
-
+current = 1
+total = 2200
 # Feature extraction
 def extractFeaturesFromImage(record):
     """
@@ -28,6 +29,7 @@ def extractFeaturesFromImage(record):
     """
     image_path = os.path.join(TRAINING_IMAGES_DIR, record["img_id"])
     print(f"Opening image {image_path}...")
+
 
     # it's possible that the image is not in the training dataset -> skip it then
     if not os.path.isfile(image_path):
@@ -49,25 +51,55 @@ def extractFeaturesFromImage(record):
     image_mask = cv2.imread(image_mask_path)
 
     # calculate asymmetry
-    try:
-        record["feat_convexity"] = features.convexity_score(image_mask)
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_convexity"] = float("nan")
-
     # try:
-    #     record["feat_color_uniformity"] = features.get_color_uniformity(image ,image_mask)["score"]
+    #     record["feat_convexity"] = features.convexity_score(image_mask)
     # except Exception as e:
     #     print(f"ERROR: {e}")
-    #     record["feat_color_uniformity"] = float("nan")
-    
+    #     record["feat_convexity"] = float("nan")
+    # try:
+    #     record["feat_avgColor"] = features.get_color_uniformity(image,image_mask)["average_color"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_avgColor"] = float("nan")
+    #a = features.convexity_metrics(image_mask)
+    # try:
+    #     record["feat_convexVariance"] = a["variance"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_convexVariance"] = float("nan")
+    # try:
+    #     record["feat_convexMax"] = a["max"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_convexMax"] = float("nan")
+    # try:
+    #     record["feat_convexAverage"] = a["average"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_convexAverage"] = float("nan")
     # try:
     #     record["feat_color"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_color"] = float("nan")
+    b = features.texture_analysis(image,image_mask)
+    try:
+        record["feat_contrast"] = b["glcm_contrast"]
+    except Exception as e:
+        print(f"ERROR: {e}")
+        record["feat_contrast"] = float("nan")
+    try:
+        record["feat_energy"] = b["glcm_energy"]
+    except Exception as e:
+        print(f"ERROR: {e}")
+        record["feat_energy"] = float("nan")
+    try:
+        record["feat_homogeneity"] = b["glcm_homogeneity"]
+    except Exception as e:
+        print(f"ERROR: {e}")
+        record["feat_homogeneity"] = float("nan")
 
-
+    
     return record
 
 
@@ -76,7 +108,7 @@ def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def loadDataFrameWithFeatures(
-        write_csv_to: str | None = "result/dataset3.csv"
+        write_csv_to: str | None = "result/UptoDateFeatures.csv"
 ,
         truncate: int | None = None) -> pd.DataFrame:
     """
@@ -93,7 +125,7 @@ def loadDataFrameWithFeatures(
     :returns: A pd.DataFrame with the data from the metadata.csv,
     and the features extracted from the images.
     """
-    DF  = pd.read_csv(p("result/dataset3.csv"))
+    DF  = pd.read_csv(p("result/UptoDateFeatures.csv"))
 
     # limit data in data frame only to images which have a mask
     # masked_images = pd.DataFrame(data = {
@@ -115,4 +147,4 @@ def loadDataFrameWithFeatures(
 
 
 if __name__ == "__main__":
-    DF = loadDataFrameWithFeatures(write_csv_to="result/dataset_conv_colUnif.csv")
+    DF = loadDataFrameWithFeatures(write_csv_to="result/UptoDateFeatures2.csv")
