@@ -46,7 +46,8 @@ def get_model_data(json_file_paths: list[str]) -> list[dict[str, Any]]:
 def generate_plots(model_data: list[dict[str, Any]]):
     NUM_PLOT_ROWS = max(math.ceil(len(model_data) / 3), 2)
     # create confusion matrices
-    fig, axs = plt.subplots(NUM_PLOT_ROWS, NUM_PLOT_COLUMNS)
+    #figure(figsize=(30, 30))
+    fig, axs = plt.subplots(NUM_PLOT_ROWS, NUM_PLOT_COLUMNS, figsize=(15, 5 * NUM_PLOT_ROWS))
     for i, model in enumerate(model_data):
         row_idx = i // NUM_PLOT_COLUMNS
         col_idx = i % NUM_PLOT_COLUMNS
@@ -83,11 +84,12 @@ def generate_plots(model_data: list[dict[str, Any]]):
     
     fig.suptitle("Confusion matrices")
 
-    plt.show()
+    # plt.show()
+    plt.savefig(os.path.join(PLOTS_DIR, "confusion_matrices.png"))
 
 
     # plot the ROC curves
-    fig, axs = plt.subplots(NUM_PLOT_ROWS, NUM_PLOT_COLUMNS)
+    fig, axs = plt.subplots(NUM_PLOT_ROWS, NUM_PLOT_COLUMNS, figsize=(18, 5 * NUM_PLOT_ROWS))
     for i, model in enumerate(model_data):
         row_idx = i // NUM_PLOT_COLUMNS
         col_idx = i % NUM_PLOT_COLUMNS
@@ -109,13 +111,14 @@ def generate_plots(model_data: list[dict[str, Any]]):
 
     fig.suptitle("ROC curves")
 
-    plt.show()
+    plt.savefig(os.path.join(PLOTS_DIR, "roc_curves.png"))
 
 
     # plot feature importances
     decision_tree_models = [model for model in model_data if model["featureImportances"] is not None]
     # pprint.pprint(decision_tree_models)
-    fig, axs = plt.subplots(max(2, len(decision_tree_models)), 2)
+    ft_importance_plot_rows = max(2, len(decision_tree_models))
+    fig, axs = plt.subplots(ft_importance_plot_rows, 2, figsize=(15, 5 * ft_importance_plot_rows))
     for i, model in enumerate(decision_tree_models):
         row_idx = i // 2
         col_idx = i % 2
@@ -134,7 +137,7 @@ def generate_plots(model_data: list[dict[str, Any]]):
 
     fig.suptitle("Feature importances for decision trees")
 
-    plt.show()
+    plt.savefig(os.path.join(PLOTS_DIR, "feature_importances.png"))
 
 
 if __name__ == "__main__":
