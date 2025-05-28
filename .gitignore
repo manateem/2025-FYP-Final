@@ -173,6 +173,3 @@ cython_debug/
 # Don't upload data to Github!
 data/
 all_images/
-
-# gitignore models
-model.pkl
