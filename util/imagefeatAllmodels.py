@@ -18,7 +18,7 @@ from sklearn.metrics import (
 df = pd.read_csv(r"C:\Users\valan\OneDrive\Desktop\Projects in D Science\MANDATORY\metadata2.csv")
 
 # Define selected numerical features
-selected_numeric_cols = ['feat_hair', 'feat_asymmetry', 'feat_border_irregularity', 'feat_color', 'feat_convexity']
+selected_numeric_cols = ['feat_asymmetry', 'feat_border_irregularity', 'feat_color']
 
 # Fill missing values using median
 df[selected_numeric_cols] = df[selected_numeric_cols].apply(lambda x: x.fillna(x.median()))
