@@ -14,6 +14,8 @@ from sklearn.metrics import (
     roc_auc_score, confusion_matrix, roc_curve, auc
 )
 
+import statsmodels.api as sm
+
 # Load dataset
 df = pd.read_csv(r"C:\Users\valan\OneDrive\Desktop\Projects in D Science\MANDATORY\metadata2.csv")
 
@@ -80,21 +82,66 @@ def plot_roc_curve(y_true, y_proba, model_name):
     plt.grid(True)
     plt.show()
 
-def plot_feature_importance(model, feature_names):
-    importances = model.named_steps['clf'].feature_importances_
-    plt.figure(figsize=(6, 4))
-    sns.barplot(x=importances, y=feature_names)
-    plt.title("Decision Tree - Feature Importances")
-    plt.xlabel("Gini Importance")
-    plt.ylabel("Feature")
-    plt.grid(True)
-    plt.show()
+# For collecting cross-val Logistic Regression coefficients and p-values
+def logistic_regression_stats(X, y, groups, n_splits=5):
+    group_kf = GroupKFold(n_splits=n_splits)
+    coefs = []
+    pvals = []
+
+    for train_idx, val_idx in group_kf.split(X, y, groups):
+        X_train_fold, y_train_fold = X.iloc[train_idx], y.iloc[train_idx]
+
+        # Standardize inside fold manually for statsmodels
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train_fold)
+
+        # Add intercept for statsmodels
+        X_train_sm = sm.add_constant(X_train_scaled)
+
+        # Fit logistic regression with statsmodels to get p-values
+        logit_model = sm.Logit(y_train_fold, X_train_sm)
+        result = logit_model.fit(disp=0)
+
+        coefs.append(result.params.values)   # includes intercept as first param
+        pvals.append(result.pvalues.values)
+
+    coefs = np.array(coefs)
+    pvals = np.array(pvals)
+
+    # Average over folds (excluding intercept index 0 for features)
+    avg_coefs = np.mean(coefs[:, 1:], axis=0)
+    avg_pvals = np.mean(pvals[:, 1:], axis=0)
+
+    return avg_coefs, avg_pvals
+
+# For collecting Decision Tree feature importances during cross-val
+def decision_tree_feature_importances(X, y, groups, n_splits=5):
+    group_kf = GroupKFold(n_splits=n_splits)
+    importances = []
+
+    for train_idx, val_idx in group_kf.split(X, y, groups):
+        X_train_fold, y_train_fold = X.iloc[train_idx], y.iloc[train_idx]
+
+        # Use pipeline with scaler + tree
+        pipeline = Pipeline([
+            ('scaler', StandardScaler()),
+            ('clf', DecisionTreeClassifier(random_state=42))
+        ])
+
+        pipeline.fit(X_train_fold, y_train_fold)
+
+        importances.append(pipeline.named_steps['clf'].feature_importances_)
+
+    importances = np.array(importances)
+    avg_importances = np.mean(importances, axis=0)
+    return avg_importances
 
 # Train and evaluate models
 cv_results = {}
 group_kf = GroupKFold(n_splits=5)
 
 for model_name, model in models.items():
+    # Fit on full training data
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)[:, 1]
@@ -114,13 +161,21 @@ for model_name, model in models.items():
     plot_confusion_matrix(y_test, y_pred, model_name)
     plot_roc_curve(y_test, y_proba, model_name)
 
-    if model_name == "Decision Tree":
-        plot_feature_importance(model, X.columns)
-
-    # Cross-validation
+    # Cross-validation accuracy scores
     cv_scores = cross_val_score(model, X_train, y_train, cv=group_kf, groups=groups_train, scoring='accuracy')
     cv_results[model_name] = cv_scores
     print(f"{model_name} - GroupKFold Mean Accuracy: {cv_scores.mean():.2f}")
+
+# Now add the special outputs:
+print("\n--- Logistic Regression significance coefficients and p-values (averaged over folds) ---")
+logit_coefs, logit_pvals = logistic_regression_stats(X_train, y_train, groups_train)
+for feat, coef, pval in zip(selected_numeric_cols, logit_coefs, logit_pvals):
+    print(f"{feat}: coef = {coef:.4f}, p-value = {pval:.4f}")
+
+print("\n--- Decision Tree Gini Importances (averaged over folds) ---")
+dt_importances = decision_tree_feature_importances(X_train, y_train, groups_train)
+for feat, imp in zip(selected_numeric_cols, dt_importances):
+    print(f"{feat}: importance = {imp:.4f}")
 
 # Cross-validation boxplot
 plt.figure(figsize=(8, 5))
