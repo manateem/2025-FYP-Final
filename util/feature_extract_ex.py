@@ -547,6 +547,7 @@ def get_color_uniformity(img, mask):
         for j in range(rows):
             if np.sum(img[i][j]) != 0:
                 variance_score += np.power((img[i][j]-average),2)
+    variance_score = np.sqrt(variance_score)
     variance_score /= pixel_count
 
     return {"score":np.average(variance_score),"average_color":average}

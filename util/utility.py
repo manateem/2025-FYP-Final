@@ -119,7 +119,7 @@ class HairExtractor:
         return (count_black_pxls / thresh.size) * 10
 
 class DataPartitioner:
-    """Splits data into training and testing data in a list that can be used for processing"""
+    """Splits data into training and testing data in lists that can be used for processing"""
     def __init__(self, seed):
         data = pd.read_csv(metadata_fp)
         self.patient_list = [x for x in data['patient_id'].unique()]

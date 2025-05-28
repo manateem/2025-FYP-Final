@@ -58,16 +58,16 @@ def extractFeaturesFromImage(record):
         record["feat_asymmetry"] = float("nan")
     
     try:
-        record["feat_border_irregularity"] = features.get_compactness(image_mask, 2)["score"]
+        record["feat_compactness"] = features.get_compactness(image_mask, 2)["score"]
     except Exception as e:
         print(f"ERROR: {e}")
-        record["feat_border_irregularity"] = float("nan")
+        record["feat_compactness"] = float("nan")
     
     try:
-        record["feat_color"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
+        record["feat_multicolor"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
     except Exception as e:
         print(f"ERROR: {e}")
-        record["feat_color"] = float("nan")
+        record["feat_multicolor"] = float("nan")
 
 
     return record

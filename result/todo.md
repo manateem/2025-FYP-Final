@@ -13,9 +13,9 @@
 - [ ] Segmentation of skin lesions 
     - Use previous students' masks for lesion extraction
     - [ ] Hair extraction
-        - [ ] Account for different hair colors?
-        - [ ] Account for amount of hair
-        - [ ] Utilize hair amount annotations to see how well our hair feature extraction performs
+        - [x] Account for different hair colors?
+        - [x] Account for amount of hair
+        - [x] Utilize hair amount annotations to see how well our hair feature extraction performs
         - [ ] Update data exploration section in Overleaf to reflect changes made, if any
 - [ ] Classification
     - [ ] ABC Classifier
@@ -26,6 +26,8 @@
                 - What to do about missing metadata? Different classifier?
             - [ ] !Hair
             - [ ] !ABC
+            - [ ] Random Noise Features
+            - [ ] 'Stupid' Features (i.e. top right pixel color)
             - [ ] ...?
         - [ ] Train and create classifier, see performance
         - [ ] See which features are insignificant and remove features and retrain
