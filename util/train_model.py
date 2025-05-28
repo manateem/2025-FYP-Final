@@ -20,6 +20,7 @@ LR_MODEL_DIR = p("models/logistic_regression")
 
 @dataclass
 class ModelData:
+    name: str
     model: Any
     accuracy: int
     confusion_matrix: NDArray
@@ -35,6 +36,8 @@ class ModelData:
 
     def to_json(self):
         return json.dumps({
+            "name": self.name,
+            "numFeatures": self.num_features,
             "accuracy": self.accuracy,
             "confusionMatrix": self.confusion_matrix.tolist(),
             "falsePositiveRate": self.false_positive_rate.tolist(),
@@ -60,6 +63,7 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
     roc_auc = auc(false_positive_rate, true_positive_rate)
 
     return ModelData(
+        name="K-Nearest-Neighbors classifier",
         model=knn_model,
         accuracy=knn_accuracy,
         confusion_matrix=knn_confusion_matrix,
@@ -86,6 +90,7 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
     feature_importances = decision_tree_model.feature_importances_
 
     return ModelData(
+        name="Decision Tree classifier",
         model=decision_tree_model,
         accuracy=tree_accuracy,
         confusion_matrix=tree_confusion_matrix,
@@ -112,6 +117,7 @@ def train_logistic_regression(x_train, x_test, y_train, y_test, features):
     roc_auc = auc(false_positive_rate, true_positive_rate)
 
     return ModelData(
+        name="Logistic Regression model",
         model=logistic_model,
         accuracy=logistic_accuracy,
         confusion_matrix=logistic_confusion_matrix,

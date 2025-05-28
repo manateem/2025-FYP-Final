@@ -1,13 +1,15 @@
 {
-    "accuracy": 0.8214285714285714,
+    "name": "Decision Tree classifier",
+    "numFeatures": 4,
+    "accuracy": 0.8261904761904761,
     "confusionMatrix": [
         [
             7,
             40
         ],
         [
-            35,
-            338
+            33,
+            340
         ]
     ],
     "falsePositiveRate": [
@@ -17,10 +19,10 @@
     ],
     "truePositiveRate": [
         0.0,
-        0.9061662198391421,
+        0.9115281501340483,
         1.0
     ],
-    "areaUnderCurve": 0.527551195025954,
+    "areaUnderCurve": 0.5302321601734071,
     "features": [
         "feat_hair",
         "feat_asymmetry",
@@ -28,9 +30,9 @@
         "feat_multicolor"
     ],
     "featureImportances": [
-        0.23591366584988896,
-        0.3096780378384325,
-        0.23375902681243496,
-        0.2206492694992436
+        0.292125442677711,
+        0.30116668806478714,
+        0.1610443171389311,
+        0.24566355211857077
     ]
 }

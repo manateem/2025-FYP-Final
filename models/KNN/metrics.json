@@ -1,4 +1,6 @@
 {
+    "name": "K-Nearest-Neighbors classifier",
+    "numFeatures": 4,
     "accuracy": 0.888095238095238,
     "confusionMatrix": [
         [
