@@ -8,8 +8,8 @@ def render(total, current):
     print(f"[{"█"*full_count}{"░"*half_count}{" "*empty_count}] ({round(current/total*100, 2)}%)")
 
 if __name__ == "__main__":
-    import time
+    from time import sleep
 
-    for i in range(3311):
-        render(3311, i)
-        time.sleep(0.005)
+    for i in range(331):
+        render(331, i)
+        sleep(0.05)

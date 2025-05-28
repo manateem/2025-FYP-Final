@@ -604,19 +604,6 @@ def convexity_metrics(mask):
 
     return {"variance":var, "average":avg, "max":max(distances), "score":convexity_score(mask)}
 
-def border_solidity(mask):
-    mask_gray = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
-    ret,thresh = cv2.threshold(mask_gray, 127, 255,0)
-    contours,hierarchy = cv2.findContours(thresh,2,1)
-    cnt = contours[0]
-
-    area = cv2.contourArea(cnt)
-    hull = cv2.convexHull(cnt)
-    hull_area = cv2.contourArea(hull)
-    solidity = float(area)/hull_area
-
-    return solidity
-
 def texture_analysis(img, mask):
     masked_img = img.copy()
     masked_img[mask==0] = 0

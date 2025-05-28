@@ -12,7 +12,6 @@ TRAINING_IMAGES_DIR = p("data/noHair") #NOW THE IMAGES WITH NO HAIR
 #NOHAIR_DIR = p("data/noHair")
 MASKS_DIR = p("data/masks")
 
-
 # Feature extraction
 def extractFeaturesFromImage(record):
     """
@@ -55,11 +54,9 @@ def extractFeaturesFromImage(record):
     except Exception as e:
         print(f"ERROR: {e}")
         record["feat_convexity"] = float("nan")
-    
-    # img = extract_lesion_mask(image, image_mask)
 
     # try:
-    #     record["feat_color_uniformity"] = features.get_color_uniformity(img ,image_mask)["score"]
+    #     record["feat_color_uniformity"] = features.get_color_uniformity(image ,image_mask)["score"]
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_color_uniformity"] = float("nan")
