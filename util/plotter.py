@@ -7,7 +7,7 @@ import pprint
 import math
 import numpy as np
 
-MODELS_DIR = p("models/")
+MODELS_DIR = p("result/models/")
 PLOTS_DIR = p("result/plots/")
 
 NUM_PLOT_COLUMNS = 3
@@ -61,7 +61,6 @@ def generate_plots(model_data: list[dict[str, Any]]):
 
         # subplot.figure(figsize=(4, 4))
         im = subplot.imshow(conf_matrix)
-        print(conf_matrix)
 
         xlabels = ["False", "True"]
         ylabels = ["False", "True"]
@@ -117,7 +116,7 @@ def generate_plots(model_data: list[dict[str, Any]]):
     # plot feature importances
     decision_tree_models = [model for model in model_data if model["featureImportances"] is not None]
     # pprint.pprint(decision_tree_models)
-    ft_importance_plot_rows = max(2, len(decision_tree_models))
+    ft_importance_plot_rows = max(2, math.ceil(len(decision_tree_models) / 2))
     fig, axs = plt.subplots(ft_importance_plot_rows, 2, figsize=(15, 5 * ft_importance_plot_rows))
     for i, model in enumerate(decision_tree_models):
         row_idx = i // 2

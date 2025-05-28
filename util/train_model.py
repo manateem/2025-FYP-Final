@@ -134,10 +134,23 @@ def train_models(
         features: list[str],
         test_size: float = 0.3,
         knn_n_neighbors: int = 5,
+        save_to_directory: str = "result/models/",
         save_knn_model_to: str = "KNN",
         save_tree_model_to: str = "DecisionTree",
         save_logistic_model_to: str = "LogisticRegression"):
-    
+    save_to_directory = p(save_to_directory)
+
+    if not os.path.exists(save_to_directory):
+        os.makedirs(save_to_directory)
+
+    knn_model_dir = os.path.join(save_to_directory, "KNN/")
+    tree_model_dir = os.path.join(save_to_directory, "decision_tree/")
+    lr_model_dir = os.path.join(save_to_directory, "logistic_regression/")
+
+    for folder in [knn_model_dir, tree_model_dir, lr_model_dir]:
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
     x_all = data_frame[features]
     y_all = data_frame["biopsed"]
 
@@ -152,8 +165,8 @@ def train_models(
         features
     )
 
-    saveModel(knn_model_data.model, save_knn_model_to, KNN_MODEL_DIR)
-    with open(os.path.join(KNN_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
+    saveModel(knn_model_data.model, save_knn_model_to, knn_model_dir)
+    with open(os.path.join(knn_model_dir, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
         model_metrics_file.write(knn_model_data.to_json())
 
     decision_tree_model_data = train_decision_tree(
@@ -162,8 +175,8 @@ def train_models(
         features
     )
 
-    saveModel(decision_tree_model_data.model, save_tree_model_to, DTREE_MODEL_DIR)
-    with open(os.path.join(DTREE_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
+    saveModel(decision_tree_model_data.model, save_tree_model_to, tree_model_dir)
+    with open(os.path.join(tree_model_dir, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
         model_metrics_file.write(decision_tree_model_data.to_json())
 
     logistic_model_data = train_logistic_regression(
@@ -171,8 +184,8 @@ def train_models(
         y_train, y_test,
         features
     )
-    saveModel(logistic_model_data.model, save_logistic_model_to, LR_MODEL_DIR)
-    with open(os.path.join(LR_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
+    saveModel(logistic_model_data.model, save_logistic_model_to, lr_model_dir)
+    with open(os.path.join(lr_model_dir, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
         model_metrics_file.write(logistic_model_data.to_json())
 
     return (
@@ -188,7 +201,18 @@ if __name__ == "__main__":
     DF.dropna(inplace=True)
 
     _ = train_models(
-        DF, features=["feat_hair", "feat_asymmetry", "feat_compactness", "feat_multicolor"]
+        DF, features=["feat_compactness", "feat_multicolor"],
+        save_to_directory="result/models/2features"
+    )
+
+    _ = train_models(
+        DF, features=["feat_asymmetry", "feat_compactness", "feat_multicolor"],
+        save_to_directory="result/models/3features"
+    )
+
+    _ = train_models(
+        DF, features=["feat_hair", "feat_asymmetry", "feat_compactness", "feat_multicolor"],
+        save_to_directory="result/models/4features"
     )
 
     # print(knn_confusion_matrix)
