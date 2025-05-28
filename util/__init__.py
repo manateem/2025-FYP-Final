@@ -38,8 +38,10 @@ if __name__ == "__main__":
 
     test_img = img_util.readImageFile(test_img_path)[0]
     test_mask = img_util.readImageFile(utility.get_mask_path(test_img_path))[0]
+    """Test mask is RGB..."""
 
-    print(abc_feature_extract(test_img, test_mask))
+    # print(abc_feature_extract(test_img, test_mask))
+    print(feature_extract_ex.color_metrics(test_img, test_mask))
 
     extracted_img = utility.extract_lesion_mask(test_img,test_mask)
     plt.imshow(extracted_img)

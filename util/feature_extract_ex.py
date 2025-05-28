@@ -6,7 +6,7 @@ import numpy as np
 from math import sqrt, floor, ceil, nan, pi
 from skimage import color, exposure
 from skimage.color import rgb2gray
-from skimage.feature import blob_log
+from skimage.feature import blob_log, graycomatrix, graycoprops
 from skimage.filters import threshold_otsu
 from skimage.measure import label, regionprops
 from skimage.transform import resize
@@ -528,25 +528,26 @@ def get_relative_rgb_means(image, slic_segments):
 
 def get_color_uniformity(img, mask):
     """Calculates the average color, and variance of a masked image, averaging the variances in each channel."""
-    """Assumes img that has already been masked, where non-lesion pixels are 0."""
-    
+    masked_img = img.copy()
+    masked_img[mask==0] = 0
+
     summed = np.array([0,0,0])
     pixel_count = 0
 
-    columns = img.shape[0]
-    rows = img.shape[1]
+    columns = masked_img.shape[0]
+    rows = masked_img.shape[1]
     for i in range(columns):
         for j in range(rows):
-            if np.sum(img[i][j]) != 0:
-                summed += img[i][j]
+            if np.sum(masked_img[i][j]) != 0:
+                summed += masked_img[i][j]
                 pixel_count += 1
     average = summed/pixel_count
 
     variance_score = np.array([0,0,0]).astype('float64')
     for i in range(columns):
         for j in range(rows):
-            if np.sum(img[i][j]) != 0:
-                variance_score += np.power((img[i][j]-average),2)
+            if np.sum(masked_img[i][j]) != 0:
+                variance_score += np.power((masked_img[i][j]-average),2)
     variance_score = np.sqrt(variance_score)
     variance_score /= pixel_count
 
@@ -585,4 +586,78 @@ def significant_color_count(img, mask, significance=0.05):
             
     return success_count
     
-        
+def convexity_metrics(mask):
+    mask_gray = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
+    ret,thresh = cv2.threshold(mask_gray, 127, 255,0)
+    contours,hierarchy = cv2.findContours(thresh,2,1)
+    cnt = contours[0]
+
+    distances = []
+    for i in range(defects.shape[0]):
+        s,e,f,d = defects[i,0]
+        distances.append(d)
+    avg = sum(distances)/len(distances)
+
+    var = 0
+    for i in range(len(distances)):
+        var += (avg - i)**2
+
+    return {"variance":var, "average":avg, "max":max(distances), "score":convexity_score(mask)}
+
+def border_solidity(mask):
+    mask_gray = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
+    ret,thresh = cv2.threshold(mask_gray, 127, 255,0)
+    contours,hierarchy = cv2.findContours(thresh,2,1)
+    cnt = contours[0]
+
+    area = cv2.contourArea(cnt)
+    hull = cv2.convexHull(cnt)
+    hull_area = cv2.contourArea(hull)
+    solidity = float(area)/hull_area
+
+    return solidity
+
+def texture_analysis(img, mask):
+    masked_img = img.copy()
+    masked_img[mask==0] = 0
+
+    glcm = graycomatrix(image, distances=[1], angles=[0], levels=256, symmetric=True, normed=True)
+    contrast = graycoprops(glcm, 'contrast')[0, 0]
+    energy = graycoprops(glcm, 'energy')[0, 0]
+    homogeneity = graycoprops(glcm, 'homogeneity')[0, 0]
+
+
+    return {"glcm_contrast": contrast, "glcm_energy":energy, "glcm_homogeneity":homogeneity}
+
+def color_metrics(img, mask):
+    def insertionSort(arr):
+        n = len(arr)
+        if n <= 1:
+            return 
+        for i in range(1, n):
+            key = arr[i]
+            j = i-1
+            while j >= 0 and key < arr[j]:
+                arr[j+1] = arr[j]
+                j -= 1
+            arr[j+1] = key
+
+    masked_img = img.copy()
+    masked_img[mask==0] = 0
+    masked_gray = cv2.cvtColor(masked_img,cv2.COLOR_BGR2GRAY)
+
+    # Redness
+    array_size = int(len(mask[mask != 0])*0.001)
+    print(array_size)
+    arr = [0]*array_size
+    columns = masked_img.shape[0]
+    rows = masked_img.shape[1]
+    for i in range(columns):
+        for j in range(rows):
+            if np.sum(masked_img[i][j]) != 0:
+                if arr[0] < masked_img[i][j][0]:
+                    arr[0] = masked_img[i][j][0]
+                    insertionSort(arr)
+    avg_max_redness = sum(arr)/len(arr)
+
+    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min(), "avg_max_redness": avg_max_redness}

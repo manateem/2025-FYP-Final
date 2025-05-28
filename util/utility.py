@@ -15,7 +15,7 @@ masks_fp = "data/masks/"
 hairless_fp = "data/hairless/"
 
 def get_lesion_ids(patient_id):
-    "Given a patient id, return a list of all unique lesion id's for that patient. No 'PAT', just the number."
+    """Given a patient id, return a list of all unique lesion id's for that patient. No 'PAT', just the number."""
     data = pd.read_csv(metadata_fp)
     return [x for x in data[data['patient_id']==f"PAT_{patient_id}"]['lesion_id'].unique()]
 
