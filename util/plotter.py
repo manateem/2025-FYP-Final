@@ -112,5 +112,30 @@ def generate_plots(model_data: list[dict[str, Any]]):
     plt.show()
 
 
+    # plot feature importances
+    decision_tree_models = [model for model in model_data if model["featureImportances"] is not None]
+    # pprint.pprint(decision_tree_models)
+    fig, axs = plt.subplots(max(2, len(decision_tree_models)), 2)
+    for i, model in enumerate(decision_tree_models):
+        row_idx = i // 2
+        col_idx = i % 2
+        subplot = axs[row_idx, col_idx]
+
+        features = model["features"]
+        feature_importances = model["featureImportances"]
+        model_name = model["name"]
+        num_features = model["numFeatures"]
+
+        subplot.bar(x=features, height=feature_importances)
+        subplot.set_title(f"{model_name} ({num_features} features)")
+        subplot.set_xlabel("Feature")
+        subplot.set_ylabel("Gini Importance")
+        subplot.grid(True)
+
+    fig.suptitle("Feature importances for decision trees")
+
+    plt.show()
+
+
 if __name__ == "__main__":
     generate_plots(get_model_data(model_stats_files()))
