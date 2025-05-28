@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score
+from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -7,12 +7,31 @@ from sklearn.preprocessing import normalize
 from utility import saveModel
 from constants import p
 import pandas as pd
+from dataclasses import dataclass
+from typing import Any
+from numpy.typing import NDArray
+import json
+import os
 
 KNN_MODEL_DIR = p("models/KNN")
 DTREE_MODEL_DIR = p("models/decision_tree")
 LR_MODEL_DIR = p("models/logistic_regression")
 
-def train_knn_model(x_train, x_test, y_train, y_test, n_neighbors = 5):
+
+@dataclass
+class ModelData:
+    model: Any
+    accuracy: int
+    confusion_matrix: NDArray
+
+    def to_json(self):
+        return json.dumps({
+            "accuracy": self.accuracy,
+            "confusionMatrix": self.confusion_matrix.tolist()
+        }, indent=4)
+
+
+def train_knn_model(x_train, x_test, y_train, y_test, n_neighbors = 5) -> ModelData:
     x_train, x_test = normalize(x_train), normalize(x_test)
 
     knn_model = KNeighborsClassifier(n_neighbors=n_neighbors)
@@ -21,8 +40,13 @@ def train_knn_model(x_train, x_test, y_train, y_test, n_neighbors = 5):
     y_pred = knn_model.predict(x_test)
 
     knn_confusion_matrix = confusion_matrix(y_test, y_pred)
+    knn_accuracy = accuracy_score(y_test, y_pred)
 
-    return knn_model, knn_confusion_matrix
+    return ModelData(
+        model=knn_model,
+        accuracy=knn_accuracy,
+        confusion_matrix=knn_confusion_matrix
+    )
 
 
 def train_decision_tree(x_train, x_test, y_train, y_test):
@@ -32,8 +56,14 @@ def train_decision_tree(x_train, x_test, y_train, y_test):
     y_pred = decision_tree_model.predict(x_test)
 
     tree_confusion_matrix = confusion_matrix(y_test, y_pred)
+    tree_accuracy = accuracy_score(y_test, y_pred)
 
-    return decision_tree_model, tree_confusion_matrix
+    return ModelData(
+        model=decision_tree_model,
+        accuracy=tree_accuracy,
+        confusion_matrix=tree_confusion_matrix
+    )
+
 
 def train_logistic_regression(x_train, x_test, y_train, y_test):
     x_train, x_test = normalize(x_train), normalize(x_test)
@@ -44,8 +74,13 @@ def train_logistic_regression(x_train, x_test, y_train, y_test):
     y_pred = logistic_model.predict(x_test)
 
     logistic_confusion_matrix = confusion_matrix(y_test, y_pred)
+    logistic_accuracy = accuracy_score(y_test, y_pred)
 
-    return logistic_model, logistic_confusion_matrix
+    return ModelData(
+        model=logistic_model,
+        accuracy=logistic_accuracy,
+        confusion_matrix=logistic_confusion_matrix
+    )
 
 
 def train_models(
@@ -65,34 +100,38 @@ def train_models(
         test_size=test_size, random_state=42
     )
 
-    knn_model, knn_confusion_matrix = train_knn_model(
+    knn_model_data = train_knn_model(
         x_train,
         x_test,
         y_train,
         y_test
     )
 
-    saveModel(knn_model, save_knn_model_to, KNN_MODEL_DIR)
+    saveModel(knn_model_data.model, save_knn_model_to, KNN_MODEL_DIR)
+    with open(os.path.join(KNN_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
+        model_metrics_file.write(knn_model_data.to_json())
 
-    decision_tree_model, decision_tree_confusion_matrix = train_decision_tree(
+    decision_tree_model_data = train_decision_tree(
         x_train, x_test,
         y_train, y_test
     )
 
-    saveModel(decision_tree_model, save_tree_model_to, DTREE_MODEL_DIR)
+    saveModel(decision_tree_model_data.model, save_tree_model_to, DTREE_MODEL_DIR)
+    with open(os.path.join(DTREE_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
+        model_metrics_file.write(decision_tree_model_data.to_json())
 
-    logistic_model, logistic_confusion_matrix = train_logistic_regression(
-        x_train,
-        x_test, 
-        y_train, 
-        y_test
+    logistic_model_data = train_logistic_regression(
+        x_train, x_test, 
+        y_train, y_test
     )
-    saveModel(logistic_model, save_logistic_model_to, LR_MODEL_DIR)
+    saveModel(logistic_model_data.model, save_logistic_model_to, LR_MODEL_DIR)
+    with open(os.path.join(LR_MODEL_DIR, "metrics.json"), "w", encoding="utf-8") as model_metrics_file:
+        model_metrics_file.write(logistic_model_data.to_json())
 
     return (
-        (knn_model, knn_confusion_matrix), 
-        (decision_tree_model, decision_tree_confusion_matrix) , 
-        (logistic_model, logistic_confusion_matrix)
+        knn_model_data,
+        decision_tree_model_data,
+        logistic_model_data
     )
 
 
@@ -101,10 +140,10 @@ if __name__ == "__main__":
     DF = pd.read_csv(p("result/dataset3.csv"))
     DF.dropna(inplace=True)
 
-    (knn_model, knn_confusion_matrix), (decision_tree_model, decision_tree_confusion_matrix), (log_model, log_conf_matrix) = train_models(
+    _ = train_models(
         DF, features=["feat_hair", "feat_asymmetry", "feat_compactness", "feat_multicolor"]
     )
 
-    print(knn_confusion_matrix)
-    print(decision_tree_confusion_matrix)
-    print(log_conf_matrix)
+    # print(knn_confusion_matrix)
+    # print(decision_tree_confusion_matrix)
+    # print(log_conf_matrix)
