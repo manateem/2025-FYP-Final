@@ -527,31 +527,24 @@ def get_relative_rgb_means(image, slic_segments):
 """Functions Written By Manateem Below"""
 
 def get_color_uniformity(img, mask):
-    """Calculates the average color, and variance of a masked image, averaging the variances in each channel."""
-    masked_img = img.copy()
-    masked_img[mask==0] = 0
+    """
+    Calculates the average color (scalar) and standard deviation (as a measure of variance)
+    of a masked image region. The score is the average of standard deviations across RGB channels.
+    """
+    # Apply mask
+    masked_pixels = img[mask > 0]
 
-    summed = np.array([0,0,0])
-    pixel_count = 0
+    if masked_pixels.size == 0:
+        return {"score": 0, "average_color": 0}
 
-    columns = masked_img.shape[0]
-    rows = masked_img.shape[1]
-    for i in range(columns):
-        for j in range(rows):
-            if np.sum(masked_img[i][j]) != 0:
-                summed += masked_img[i][j]
-                pixel_count += 1
-    average = summed/pixel_count
+    # Compute mean color per channel, then average the channels to get a single scalar
+    average_color = np.mean(masked_pixels)  # Scalar: mean of all R, G, B values
 
-    # variance_score = np.array([0,0,0]).astype('float64')
-    # for i in range(columns):
-    #     for j in range(rows):
-    #         if np.sum(masked_img[i][j]) != 0:
-    #             variance_score += np.power((masked_img[i][j]-average),2)
-    # variance_score = np.sqrt(variance_score)
-    # variance_score /= pixel_count
+    # Compute standard deviation per channel, then average
+    std_dev = np.std(masked_pixels, axis=0)
+    score = np.mean(std_dev)
 
-    return {"score":np.average(0),"average_color":average}
+    return {"score": score, "average_color": average_color}
 
 def significant_color_count(img, mask, significance=0.05):
     """DOES NOT WORK AS INTENDED CURRENTLY, WIP"""

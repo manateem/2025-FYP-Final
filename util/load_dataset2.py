@@ -82,22 +82,38 @@ def extractFeaturesFromImage(record):
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_color"] = float("nan")
-    b = features.texture_analysis(image,image_mask)
+    # b = features.texture_analysis(image,image_mask)
+    # try:
+    #     record["feat_contrast"] = b["glcm_contrast"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_contrast"] = float("nan")
+    # try:
+    #     record["feat_energy"] = b["glcm_energy"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_energy"] = float("nan")
+    # try:
+    #     record["feat_homogeneity"] = b["glcm_homogeneity"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_homogeneity"] = float("nan")
     try:
-        record["feat_contrast"] = b["glcm_contrast"]
+        c = features.get_color_uniformity(image,image_mask)
+    except:
+        record["feat_colorUniformity"] = float("nan")
+        record["feat_averageColor"] = float("nan")
+        return record
+    try:
+        record["feat_colorUniformity"] = c["score"]
     except Exception as e:
         print(f"ERROR: {e}")
-        record["feat_contrast"] = float("nan")
+        record["feat_colorUniformity"] = float("nan")
     try:
-        record["feat_energy"] = b["glcm_energy"]
+        record["feat_averageColor"] = c["average_color"]
     except Exception as e:
         print(f"ERROR: {e}")
-        record["feat_energy"] = float("nan")
-    try:
-        record["feat_homogeneity"] = b["glcm_homogeneity"]
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_homogeneity"] = float("nan")
+        record["feat_averageColor"] = float("nan")
 
     
     return record
@@ -110,7 +126,8 @@ def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
 def loadDataFrameWithFeatures(
         write_csv_to: str | None = "result/UptoDateFeatures.csv"
 ,
-        truncate: int | None = None) -> pd.DataFrame:
+        truncate: int | None = None,
+        start: int | None = None) -> pd.DataFrame:
     """
     Load a data frame from the metadata, with new
     columns for the data extracted from the image files.
@@ -134,8 +151,10 @@ def loadDataFrameWithFeatures(
 
     #DF = pd.merge(DF, masked_images, on='img_id', how='inner')
 
-    if isinstance(truncate, int):
-        DF = DF.head(truncate)
+    if start is not None or truncate is not None:
+        start = start or 0  # default to 0 if None
+        end = start + truncate if truncate is not None else None
+        DF = DF.iloc[start:end]
     
     DF = addFeatures(DF)
 
@@ -147,4 +166,4 @@ def loadDataFrameWithFeatures(
 
 
 if __name__ == "__main__":
-    DF = loadDataFrameWithFeatures(write_csv_to="result/UptoDateFeatures2.csv")
+    DF = loadDataFrameWithFeatures(write_csv_to="result/UptoDateFeaturesForReal.csv")

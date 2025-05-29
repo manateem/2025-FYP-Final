@@ -50,25 +50,29 @@ def extractFeaturesFromImage(record):
     image_mask_path = os.path.join(MASKS_DIR, image_mask_filename)
     image_mask = cv2.imread(image_mask_path)
 
-    # calculate asymmetry
-    try:
-        record["feat_asymmetry"] = features.rotation_asymmetry(image_mask, 5)["average"]
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_asymmetry"] = float("nan")
+    # # calculate asymmetry
+    # try:
+    #     record["feat_asymmetry"] = features.rotation_asymmetry(image_mask, 5)["average"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_asymmetry"] = float("nan")
     
-    try:
-        record["feat_compactness"] = features.get_compactness(image_mask, 2)["score"]
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_compactness"] = float("nan")
+    # try:
+    #     record["feat_compactness"] = features.get_compactness(image_mask, 2)["score"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_compactness"] = float("nan")
     
+    # try:
+    #     record["feat_multicolor"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_multicolor"] = float("nan")
     try:
         record["feat_multicolor"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
     except Exception as e:
         print(f"ERROR: {e}")
         record["feat_multicolor"] = float("nan")
-
 
     return record
 
