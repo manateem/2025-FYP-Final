@@ -13,10 +13,10 @@ from time import sleep
 DATA_DIR = p("data/")
 IMAGES_DIR = p("data/images/")
 MASKS_DIR = p("data/masks/")
-NOHAIR_DIR = p("data/noHairTEST/")
+NOHAIR_DIR = p("data/noHair/")
 METADATA_FP = p("data/metadata.csv")
 
-REL_OUTPUT_CSV_FP = "result/featuresTEST.csv"
+REL_OUTPUT_CSV_FP = "result/features.csv"
 OUTPUT_CSV_FP = p(REL_OUTPUT_CSV_FP)
 
 def hairExtractFeature(record):
