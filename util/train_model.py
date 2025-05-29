@@ -12,6 +12,7 @@ from typing import Any
 import numpy as np
 from numpy.typing import NDArray
 import json
+import pprint
 import os
 
 KNN_MODEL_DIR = p("models/KNN")
@@ -58,6 +59,8 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
     x_train = scaler.fit_transform(x_train)
     x_test = scaler.transform(x_test)
 
+    y_train, y_test = y_train.values, y_test.values
+
     knn_model = KNeighborsClassifier(n_neighbors=n_neighbors)
     knn_model.fit(x_train, y_train)
 
@@ -72,7 +75,7 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
     false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
     roc_auc = roc_auc_score(y_test, y_proba)
 
-    return ModelData(
+    model_data = ModelData(
         name="K-Nearest-Neighbors classifier",
         model=knn_model,
         accuracy=knn_accuracy,
@@ -86,6 +89,10 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
         recall=recall
     )
 
+    pprint.pprint(model_data)
+
+    return model_data
+
 
 def train_decision_tree(
         x_train, x_test,
@@ -94,16 +101,16 @@ def train_decision_tree(
     decision_tree_model = DecisionTreeClassifier()
     decision_tree_model = decision_tree_model.fit(x_train, y_train)
 
-    y_pred = decision_tree_model.predict(x_test)
-    y_proba = decision_tree_model.predict_proba(x_test)[:, 1]
+    y_pred = decision_tree_model.predict(x_test.values)
+    y_proba = decision_tree_model.predict_proba(x_test.values)[:, 1]
 
-    tree_confusion_matrix = confusion_matrix(y_test, y_pred)
-    tree_accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
+    tree_confusion_matrix = confusion_matrix(y_test.values, y_pred)
+    tree_accuracy = accuracy_score(y_test.values, y_pred)
+    precision = precision_score(y_test.values, y_pred)
+    recall = recall_score(y_test.values, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
-    roc_auc = roc_auc_score(y_test, y_proba)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test.values, y_proba)
+    roc_auc = roc_auc_score(y_test.values, y_proba)
 
     # Group K-Fold for feature importances
     dt_importances = []
@@ -130,7 +137,7 @@ def train_logistic_regression(x_train, x_test, y_train, y_test, features):
     x_test = scaler.transform(x_test)
 
     logistic_model = LogisticRegression(solver="liblinear")
-    logistic_model.fit(x_train, y_train)
+    logistic_model.fit(x_train, y_train.values)
 
     y_pred = logistic_model.predict(x_test)
     y_proba = logistic_model.predict_proba(x_test)[:, 1]
@@ -239,13 +246,20 @@ if __name__ == "__main__":
     # run DF = DF.dropna(subset=feature_columns)
     DF = DF.dropna(subset=feature_columns)
 
-    _ = train_models(
-        DF, features=["feat_asymmetry", "feat_border_irregularity",
-            "feat_colorUniformity","feat_homogeneity"],
-            save_to_directory="result/models/finalModel"
-    )
+    # _ = train_models(
+    #     DF, features=["feat_asymmetry", "feat_border_irregularity",
+    #         "feat_colorUniformity","feat_homogeneity"],
+    #         save_to_directory="result/models/finalModel"
+    # )
 
     # _ = train_models(
     #     DF, features=feature_columns,
     #     save_to_directory="result/models/2_MegaClassifier"
     # )
+
+    DF2 = pd.read_csv(p("result/features_binarized.csv"))
+    DF2.drop(["patient_id", "lesion_id", "region", "diagnostic", "img_id"], axis=1, inplace=True)
+    _ = train_models(
+        DF2, features=[col for col in DF2.columns if col != "biopsed" and not col.startswith("random")],
+        save_to_directory="result/models/3_UltraClassifiers"
+    )

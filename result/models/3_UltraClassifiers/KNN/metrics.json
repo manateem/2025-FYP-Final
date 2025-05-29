@@ -1,0 +1,68 @@
+{
+    "name": "K-Nearest-Neighbors classifier",
+    "numFeatures": 33,
+    "accuracy": 0.9247311827956989,
+    "precision": 0.9340659340659341,
+    "recall": 0.9883720930232558,
+    "confusionMatrix": [
+        [
+            3,
+            18
+        ],
+        [
+            3,
+            255
+        ]
+    ],
+    "falsePositiveRate": [
+        0.0,
+        0.2857142857142857,
+        0.6190476190476191,
+        0.8571428571428571,
+        1.0
+    ],
+    "truePositiveRate": [
+        0.0,
+        0.7635658914728682,
+        0.9341085271317829,
+        0.9883720930232558,
+        1.0
+    ],
+    "areaUnderCurve": 0.7629198966408268,
+    "features": [
+        "smoke",
+        "drink",
+        "age",
+        "pesticide",
+        "skin_cancer_history",
+        "cancer_history",
+        "has_piped_water",
+        "has_sewage_system",
+        "fitspatrick",
+        "diameter_1",
+        "diameter_2",
+        "itch",
+        "grew",
+        "hurt",
+        "changed",
+        "bleed",
+        "elevation",
+        "feat_hair",
+        "feat_asymmetry",
+        "feat_border_irregularity",
+        "feat_multiColorRate",
+        "feat_convexity",
+        "feat_maxBrightness",
+        "feat_minBrightness",
+        "feat_convexVariance",
+        "feat_convexMax",
+        "feat_convexAverage",
+        "feat_contrast",
+        "feat_energy",
+        "feat_homogeneity",
+        "feat_colorUniformity",
+        "feat_averageColor",
+        "feat_averageRedness"
+    ],
+    "featureImportances": null
+}

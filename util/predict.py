@@ -56,9 +56,12 @@ def get_model_performance_on_extern_data(
         X = DF[feature_columns]
         scaler = StandardScaler()
         X = scaler.fit_transform(X)
+        if isinstance(X, pd.DataFrame):
+            X = X.values
         print(f"Will use features: {feature_columns}")
     else:
         print(f"{model_name}: not scaling")
+        X = X.values
         print(f"Will use features: {feature_columns}")
 
     #print(X)
@@ -104,8 +107,8 @@ if __name__ == "__main__":
     model_perfomance_analyses = []
 
     for model_name, model_file_path in models:
-        scale = True
-        
+        scale = "Decision Tree" not in model_name
+
         feature_columns: list[str] | None
         if "ABC" in model_name:
             feature_columns = [
