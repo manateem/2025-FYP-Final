@@ -1,0 +1,55 @@
+{
+    "name": "K-Nearest-Neighbors classifier",
+    "numFeatures": 16,
+    "accuracy": 0.6420047732696897,
+    "precision": 0.6810035842293907,
+    "recall": 0.7569721115537849,
+    "confusionMatrix": [
+        [
+            79,
+            89
+        ],
+        [
+            61,
+            190
+        ]
+    ],
+    "falsePositiveRate": [
+        0.0,
+        0.07142857142857142,
+        0.27380952380952384,
+        0.5297619047619048,
+        0.7261904761904762,
+        0.9285714285714286,
+        1.0
+    ],
+    "truePositiveRate": [
+        0.0,
+        0.21115537848605578,
+        0.5219123505976095,
+        0.7569721115537849,
+        0.8844621513944223,
+        0.9800796812749004,
+        1.0
+    ],
+    "areaUnderCurve": 0.6659907987099222,
+    "features": [
+        "feat_hair",
+        "feat_asymmetry",
+        "feat_border_irregularity",
+        "feat_multiColorRate",
+        "feat_convexity",
+        "feat_maxBrightness",
+        "feat_minBrightness",
+        "feat_convexVariance",
+        "feat_convexMax",
+        "feat_convexAverage",
+        "feat_contrast",
+        "feat_energy",
+        "feat_homogeneity",
+        "feat_colorUniformity",
+        "feat_averageColor",
+        "feat_averageRedness"
+    ],
+    "featureImportances": null
+}

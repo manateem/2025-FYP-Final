@@ -87,7 +87,10 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
     )
 
 
-def train_decision_tree(x_train, x_test, y_train, y_test, features):
+def train_decision_tree(
+        x_train, x_test,
+        y_train, y_test,
+        features):
     decision_tree_model = DecisionTreeClassifier()
     decision_tree_model = decision_tree_model.fit(x_train, y_train)
 
@@ -102,6 +105,8 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
     false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
     roc_auc = roc_auc_score(y_test, y_proba)
 
+    # Group K-Fold for feature importances
+    dt_importances = []
     feature_importances = decision_tree_model.feature_importances_
 
     return ModelData(
@@ -167,12 +172,12 @@ def train_models(
     if not os.path.exists(save_to_directory):
         os.makedirs(save_to_directory)
 
-    print(
-        "Amount of True vs False biopsed:",
-        len(DF[DF["biopsed"] == True]),
-        "false:",
-        len(DF[DF["biopsed"] == False])
-    )
+    # print(
+    #     "Amount of True vs False biopsed:",
+    #     len(DF[DF["biopsed"] == True]),
+    #     "false:",
+    #     len(DF[DF["biopsed"] == False])
+    # )
 
     knn_model_dir = os.path.join(save_to_directory, "KNN/")
     tree_model_dir = os.path.join(save_to_directory, "decision_tree/")
@@ -228,26 +233,19 @@ def train_models(
 
 
 if __name__ == "__main__":
-    DF = pd.read_csv(p("result/dataset3.csv"))
+    DF = pd.read_csv(p("result/features.csv"))
     feature_columns = [col for col in DF.columns if col.startswith("feat_")]
     print(feature_columns)
+    # run DF = DF.dropna(subset=feature_columns)
     DF = DF.dropna(subset=feature_columns)
 
     _ = train_models(
-        DF, features=["feat_compactness", "feat_multicolor"],
-        save_to_directory="result/models/2features"
+        DF, features=["feat_asymmetry", "feat_border_irregularity",
+            "feat_multiColorRate"],
+            save_to_directory="result/models/1_ABC_Classifiers"
     )
 
     _ = train_models(
-        DF, features=["feat_asymmetry", "feat_compactness", "feat_multicolor"],
-        save_to_directory="result/models/3features"
+        DF, features=feature_columns,
+        save_to_directory="result/models/2_MegaClassifier"
     )
-
-    _ = train_models(
-        DF, features=["feat_hair", "feat_asymmetry", "feat_compactness", "feat_multicolor"],
-        save_to_directory="result/models/4features"
-    )
-
-    # print(knn_confusion_matrix)
-    # print(decision_tree_confusion_matrix)
-    # print(log_conf_matrix)

@@ -7,6 +7,7 @@ import os
 import cv2
 import feature_extract_ex as features
 from utility import extract_lesion_mask
+import progress_bar
 
 TRAINING_IMAGES_DIR = p("data/noHair") #NOW THE IMAGES WITH NO HAIR
 #NOHAIR_DIR = p("data/noHair")
