@@ -131,17 +131,20 @@ def extractFeaturesFromImage(record):
     #     print(f"ERROR: {e}")
     #     record["feat_averageRedness"] = float("nan")
     
-    a = features.color_metrics(image, image_maskG)
-    try:
-        record["feat_maxBrightness"] = a["max_brightness"]
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_maxBrightness"] = float("nan")
-    try:
-        record["feat_minBrightness"] = a["min_brightness"]
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_minBrightness"] = float("nan")
+    # a = features.color_metrics(image, image_maskG)
+    # try:
+    #     record["feat_maxBrightness"] = a["max_brightness"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_maxBrightness"] = float("nan")
+    # try:
+    #     record["feat_minBrightness"] = a["min_brightness"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_minBrightness"] = float("nan")
+    # ADDING RANDOM NOISE :D
+    for i in range(1,11):
+        record[f"random{i}"] = np.random.rand()
 
     
     return record

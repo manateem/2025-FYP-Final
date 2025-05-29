@@ -37,7 +37,7 @@ def extractFeaturesFromImage(record):
         return record
 
     image = cv2.imread(image_path)
-    # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     #image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # hair feature
@@ -115,20 +115,22 @@ def extractFeaturesFromImage(record):
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_averageColor"] = float("nan")
-    try:
-        record["feat_averageRedness"] = features.get_avg_max_redness(image, image_maskG)
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_averageRedness"] = float("nan")
+    # try:
+    #     record["feat_averageRedness"] = features.get_avg_max_redness(image, image_maskG)
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_averageRedness"] = float("nan")
+    # The randomest noise you will ever witness
+    for i in range(1,11):
+        record[f"random{i}"] = np.random.rand()
     return record
-
 
 def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
     return data_frame.apply(extractFeaturesFromImage, axis=1)
 
 
 def loadDataFrameWithFeatures(
-        write_csv_to: str | None = "result/UptoDateFeaturesForReal.csv"
+        write_csv_to: str | None = "result/features.csv"
 ,
         truncate: int | None = None,
         start: int | None = None) -> pd.DataFrame:
@@ -146,7 +148,7 @@ def loadDataFrameWithFeatures(
     :returns: A pd.DataFrame with the data from the metadata.csv,
     and the features extracted from the images.
     """
-    DF  = pd.read_csv(p("result/UptoDateFeaturesForReal.csv"))
+    DF  = pd.read_csv(p("result/features.csv"))
 
     # limit data in data frame only to images which have a mask
     # masked_images = pd.DataFrame(data = {
@@ -170,4 +172,4 @@ def loadDataFrameWithFeatures(
 
 
 if __name__ == "__main__":
-    DF = loadDataFrameWithFeatures(write_csv_to="result/UptoDateFeaturesForReal2.csv")
+    DF = loadDataFrameWithFeatures(write_csv_to="result/features2rand.csv")
