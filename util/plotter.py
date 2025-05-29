@@ -62,7 +62,7 @@ def generate_plots(model_data: list[dict[str, Any]]):
 
         # subplot.figure(figsize=(4, 4))
         im = subplot.imshow(conf_matrix, cmap=plt_cm["summer"])
-        pprint.pprint(conf_matrix)
+        # pprint.pprint(conf_matrix)
 
         # print(f"---- {model_name} ({model_feat_count} features) -----")
         # print("Confusion matrix:")
@@ -122,12 +122,11 @@ def generate_plots(model_data: list[dict[str, Any]]):
     # plot feature importances
     decision_tree_models = [model for model in model_data if model["featureImportances"] is not None]
     # pprint.pprint(decision_tree_models)
-    ft_importance_plot_rows = max(2, math.ceil(len(decision_tree_models) / 2))
-    fig, axs = plt.subplots(ft_importance_plot_rows, 2, figsize=(15, 5 * ft_importance_plot_rows))
+    ft_importance_plot_rows = max(2, len(decision_tree_models))
+    fig, axs = plt.subplots(ft_importance_plot_rows, 1, figsize=(10, 8 + 5 * ft_importance_plot_rows))
     for i, model in enumerate(decision_tree_models):
-        row_idx = i // 2
-        col_idx = i % 2
-        subplot = axs[row_idx, col_idx]
+        subplot = axs[i]
+        # print(type(subplot))
 
         features = model["features"]
         feature_importances = model["featureImportances"]
@@ -135,11 +134,13 @@ def generate_plots(model_data: list[dict[str, Any]]):
         num_features = model["numFeatures"]
 
         subplot.bar(x=features, height=feature_importances)
+        subplot.tick_params(axis='x', labelrotation=90)
         subplot.set_title(f"{model_name} ({num_features} features)")
         subplot.set_xlabel("Feature")
         subplot.set_ylabel("Gini Importance")
         subplot.grid(True)
 
+    fig.tight_layout()
     fig.suptitle("Feature importances for decision trees")
 
     plt.savefig(os.path.join(PLOTS_DIR, "feature_importances.png"))
