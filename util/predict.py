@@ -12,6 +12,7 @@ from sklearn.metrics import (
 from matplotlib import pyplot as plt
 from matplotlib import colormaps as plt_cm
 import numpy as np
+from sklearn import set_config as sklearn_set_config
 
 
 def load_model(path_to_model_pkl):
@@ -42,11 +43,23 @@ def get_model_performance_on_extern_data(
     if feature_columns is None:
         feature_columns = [feature for feature in DF if feature.startswith("feat_")]  # type: ignore
 
-    X = DF[feature_columns]
 
+    # if scale:
+    #     X = DF[feature_columns]
+    #     scaler = StandardScaler()
+    #     X = scaler.fit_transform(X)
+    # else:
+    #     X = DF[feature_columns]
+    X = DF[feature_columns]
     if scale:
+        print(f"{model_name}: scaling...")
+        X = DF[feature_columns]
         scaler = StandardScaler()
         X = scaler.fit_transform(X)
+        print(f"Will use features: {feature_columns}")
+    else:
+        print(f"{model_name}: not scaling")
+        print(f"Will use features: {feature_columns}")
 
     #print(X)
     Y = DF["BIOPSED"]
@@ -76,6 +89,8 @@ def get_model_performance_on_extern_data(
 
 
 if __name__ == "__main__":
+    sklearn_set_config(transform_output="pandas")
+
     models = [
         ("KNN Classifier - ABC Features", "result/models/1_ABC_Classifiers/KNN/KNN.pkl"),
         ("Decision Tree Classifier - ABC Features", "result/models/1_ABC_Classifiers/decision_tree/DecisionTree.pkl"),
@@ -89,7 +104,8 @@ if __name__ == "__main__":
     model_perfomance_analyses = []
 
     for model_name, model_file_path in models:
-        scale = "Decision Tree" in model_name
+        scale = True
+        
         feature_columns: list[str] | None
         if "ABC" in model_name:
             feature_columns = [
