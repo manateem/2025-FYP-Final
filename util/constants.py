@@ -6,7 +6,7 @@ Add global constants here
 import os, sys
 
 
-PROJECT_NAME = "2025-FYP-Final"
+PROJECT_NAME = "2025-FYP-groupManateem"
 PROJECT_DIR = os.getcwd()
 if PROJECT_NAME not in PROJECT_DIR:
     print(f"[ERROR] Wrong working directory! File must be ran from inside {PROJECT_NAME}")

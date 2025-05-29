@@ -1,6 +1,8 @@
 # Manateem Remarks
-2025-FYP-Final/
-├── data/
+This is how our project structure looks like and how you should structure yourself.
+```
+2025-FYP-group/
+├── data/                               # please structure you data folder as so
 │   ├── images/
 │   │   ├── PAT_8_15_820.png
 │   │   ......
@@ -9,7 +11,7 @@
 │   │   ├── PAT_8_15_820_mask.png
 │   │   ......
 │   │   └── PAT_XXX_XXX_XXX_mask.png
-│   ├── noHair/
+│   ├── noHair/                         # this will be created for you
 │   │   ├── PAT_8_15_820.png
 │   │   ......
 │   │   └── PAT_XXX_XXX_XXX.png
@@ -18,25 +20,39 @@
 ├── util/
 │   ├── __main__.py             # starting place for TA's :)
 │   ├── img_util.py             # basic image read and write functions
+│   ├── data_binarizer.py       # changes true and false values to 0 and 1 for dataframes
+│   ├── getFeaturesEXTERNAL.py  # extracts feature data specifically for external dataset
+│   ├── GroupKfold.py           # used for performance analysis of features of megaclassifier
+│   ├── plotter.py              # used for creation of plots for project
+│   ├── predict.py              # used for analyzing model testing of external data
+│   ├── progress_bar.py         # visual aid for ETA of feature extraction completion
 │   ├── train_model.py          # model training
 │   ├── feature_extract_ex.py   # code for all the features that we use
 │   ├── utility.py              # a variety of useful utility files for processing
 │   ├── plotter.py              # script for plot creation
-│   ├── extractor.py            # extracts feature data from all images
+│   ├── extractor.py            # extracts feature data from all images, 
+│   |                           # allowing for reproducibility of our results
 │   ......
 │   └── constants.py            # ensures that file paths are universal between machines
 │ 
 ├── result/
-│   ├── result_baseline.csv     # your results on the baseline setup
-│   ├── result_extended.csv     # your results on the extended setup
-│   └── report.pdf      		# your report in PDF
+│   ├── features_binarized.csv  # features for mega-classifier (metadata and image features)
+│   ├── features.csv            # features for general classifier use
+│   ├── featuresEXTERNAL.csv    # features of external data
+│   ├── models                  # models, where you can find their .pkl file and results/metrics of each model
+│   │   ├── 1_ABC_Classifiers
+│   │   ├── 2_MegaClassifier
+│   │   └── finalModel
+│   ├── Plots                   # used for report
+│   │   ├── PAT_8_15_820_mask.png
+│   └── report.pdf      		# our report in PDF
 │ 
 ├── main_demo.py		# demo script (reference setup, remove in your hand-in)
 ├── main_baseline.py	# complete script (baseline setup)
 ├── main_extended.py	# complete script (extended setup)
 ├── dataset.csv    		# all image file names, ground-truth labels, and chosen features
 └── README.md
-
+```
 
 # Projects in Data Science (2025)
 ## Overview
