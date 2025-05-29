@@ -1,4 +1,4 @@
-from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score, roc_curve, auc, roc_auc_score
+from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, roc_curve, auc, roc_auc_score, precision_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -23,13 +23,15 @@ LR_MODEL_DIR = p("models/logistic_regression")
 class ModelData:
     name: str
     model: Any
-    accuracy: int
     confusion_matrix: NDArray
     false_positive_rate: NDArray
     true_positive_rate: NDArray
     area_under_curve: float
     features: list[str]
     feature_importances: NDArray | None
+    accuracy: float | None = None
+    precision: float | None = None
+    recall: float | None = None
 
     @property
     def num_features(self):
@@ -40,6 +42,8 @@ class ModelData:
             "name": self.name,
             "numFeatures": self.num_features,
             "accuracy": self.accuracy,
+            "precision": self.precision,
+            "recall": self.recall,
             "confusionMatrix": self.confusion_matrix.tolist(),
             "falsePositiveRate": self.false_positive_rate.tolist(),
             "truePositiveRate": self.true_positive_rate.tolist(),
@@ -50,7 +54,9 @@ class ModelData:
 
 
 def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5) -> ModelData:
-    x_train, x_test = normalize(x_train), normalize(x_test)
+    scaler = StandardScaler()
+    x_train = scaler.fit_transform(x_train)
+    x_test = scaler.transform(x_test)
 
     knn_model = KNeighborsClassifier(n_neighbors=n_neighbors)
     knn_model.fit(x_train, y_train)
@@ -60,6 +66,8 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
 
     knn_confusion_matrix = confusion_matrix(y_test, y_pred)
     knn_accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
 
     false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
     roc_auc = roc_auc_score(y_test, y_proba)
@@ -73,7 +81,9 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
         true_positive_rate=true_positive_rate,
         area_under_curve=roc_auc,
         features=features,
-        feature_importances=None
+        feature_importances=None,
+        precision=precision,
+        recall=recall
     )
 
 
@@ -86,6 +96,8 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
 
     tree_confusion_matrix = confusion_matrix(y_test, y_pred)
     tree_accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
 
     false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
     roc_auc = roc_auc_score(y_test, y_proba)
@@ -101,11 +113,16 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
         true_positive_rate=true_positive_rate,
         area_under_curve=roc_auc,
         features=features,
-        feature_importances=feature_importances
+        feature_importances=feature_importances,
+        precision=precision,
+        recall=recall
     )
 
 
 def train_logistic_regression(x_train, x_test, y_train, y_test, features):
+    scaler = StandardScaler()
+    x_train = scaler.fit_transform(x_train)
+    x_test = scaler.transform(x_test)
 
     logistic_model = LogisticRegression(solver="liblinear")
     logistic_model.fit(x_train, y_train)
@@ -115,6 +132,8 @@ def train_logistic_regression(x_train, x_test, y_train, y_test, features):
 
     logistic_confusion_matrix = confusion_matrix(y_test, y_pred)
     logistic_accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
 
     false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
     roc_auc = roc_auc_score(y_test, y_proba)
@@ -128,7 +147,9 @@ def train_logistic_regression(x_train, x_test, y_train, y_test, features):
         true_positive_rate=true_positive_rate,
         area_under_curve=roc_auc,
         features=features,
-        feature_importances=None
+        feature_importances=None,
+        precision=precision,
+        recall=recall
     )
 
 
