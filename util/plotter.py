@@ -73,13 +73,13 @@ def generate_plots(model_data: list[dict[str, Any]]):
                             rotation=90, ha="right", rotation_mode="anchor")
         
         subplot.text(0, 0, conf_matrix[0, 0],
-                    ha="center", va="center", color='w')
+                    ha="center", va="center", color='r')
         subplot.text(1, 0, conf_matrix[1, 0],
-                    ha="center", va="center", color='w')
+                    ha="center", va="center", color='r')
         subplot.text(0, 1, conf_matrix[0, 1],
-                    ha="center", va="center", color='w')
+                    ha="center", va="center", color='r')
         subplot.text(1, 1, conf_matrix[1, 1],
-                    ha="center", va="center", color='w')
+                    ha="center", va="center", color='r')
     
     fig.suptitle("Confusion matrices")
 

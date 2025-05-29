@@ -638,18 +638,31 @@ def color_metrics(img, mask):
     masked_img[mask==0] = 0
     masked_gray = cv2.cvtColor(masked_img,cv2.COLOR_BGR2GRAY)
 
-    # Redness
-    # array_size = int(len(mask[mask != 0])*0.001)
-    # print(array_size)
-    # arr = [0]*array_size
-    # columns = masked_img.shape[0]
-    # rows = masked_img.shape[1]
-    # for i in range(columns):
-    #     for j in range(rows):
-    #         if np.sum(masked_img[i][j]) != 0:
-    #             if arr[0] < masked_img[i][j][0]:
-    #                 arr[0] = masked_img[i][j][0]
-    #                 insertionSort(arr)
-    # avg_max_redness = sum(arr)/len(arr)
+    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min()}
+def get_avg_max_redness(img, mask, percentile=99.9):
+    """
+    Calculates the average of the top 0.1% red channel values within a masked region.
+    
+    Args:
+        img (np.ndarray): RGB image (H x W x 3).
+        mask (np.ndarray): Binary or boolean mask (H x W), non-zero means active pixel.
+        percentile (float): The percentile threshold (default is 99.9 for top 0.1%).
+        
+    Returns:
+        float: Average of top red values within the mask.
+    """
+    # Extract red channel values where the mask is active
+    red_channel = img[:, :, 0]
+    masked_red = red_channel[mask > 0]
 
-    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min(), "avg_max_redness": 0}
+    if masked_red.size == 0:
+        return 0.0  # Handle case where mask is empty
+
+    # Determine threshold for top 0.1%
+    threshold = np.percentile(masked_red, percentile)
+
+    # Select values above threshold
+    top_red_values = masked_red[masked_red >= threshold]
+
+    # Compute and return average
+    return float(np.mean(top_red_values))
