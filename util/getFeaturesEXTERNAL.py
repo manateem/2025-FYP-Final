@@ -62,7 +62,7 @@ def extractFeaturesFromImage(record):
     #     print(f"ERROR: {e}")
     #     record["feat_border_irregularity"] = float("nan")
     # try:
-    #     record["feat_multiColorRate"] = features.get_multicolor_rate(image, image_mask,1)
+    #     record["feat_multiColorRate"] = features.get_multicolor_rate(image, image_mask,2)
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_multiColorRate"] = float("nan")
@@ -143,7 +143,7 @@ def extractFeaturesFromImage(record):
     #     print(f"ERROR: {e}")
     #     record["feat_minBrightness"] = float("nan")
     # ADDING RANDOM NOISE :D
-    for i in range(1,11):
+    for i in range(1,36):
         record[f"random{i}"] = np.random.rand()
 
     
@@ -197,4 +197,4 @@ def loadDataFrameWithFeatures(
 
 
 if __name__ == "__main__":
-    DF = loadDataFrameWithFeatures(write_csv_to="result/featuresEXTERNAL2.csv")
+    DF = loadDataFrameWithFeatures(write_csv_to="result/featuresEXTERNAL35RANDOMS.csv")

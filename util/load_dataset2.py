@@ -121,7 +121,7 @@ def extractFeaturesFromImage(record):
     #     print(f"ERROR: {e}")
     #     record["feat_averageRedness"] = float("nan")
     # The randomest noise you will ever witness
-    for i in range(1,11):
+    for i in range(1,36):
         record[f"random{i}"] = np.random.rand()
     return record
 
