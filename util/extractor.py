@@ -79,7 +79,7 @@ def extractAllFeatures(record):
     # Progress bar print
     progress_bar.render(len(output_csv_df),record.name)
     # Set file path
-    image_fp = os.path.join(IMAGES_DIR, record["img_id"])
+    image_fp = os.path.join(NOHAIR_DIR, record["img_id"])
 
     # Checks if a value is already filled out
     try:
