@@ -1,0 +1,64 @@
+{
+    "name": "Decision Tree classifier",
+    "numFeatures": 16,
+    "accuracy": 0.5727923627684964,
+    "precision": 0.6384615384615384,
+    "recall": 0.6613545816733067,
+    "confusionMatrix": [
+        [
+            74,
+            94
+        ],
+        [
+            85,
+            166
+        ]
+    ],
+    "falsePositiveRate": [
+        0.0,
+        0.5595238095238095,
+        1.0
+    ],
+    "truePositiveRate": [
+        0.0,
+        0.6613545816733067,
+        1.0
+    ],
+    "areaUnderCurve": 0.5509153860747485,
+    "features": [
+        "feat_hair",
+        "feat_asymmetry",
+        "feat_border_irregularity",
+        "feat_multiColorRate",
+        "feat_convexity",
+        "feat_maxBrightness",
+        "feat_minBrightness",
+        "feat_convexVariance",
+        "feat_convexMax",
+        "feat_convexAverage",
+        "feat_contrast",
+        "feat_energy",
+        "feat_homogeneity",
+        "feat_colorUniformity",
+        "feat_averageColor",
+        "feat_averageRedness"
+    ],
+    "featureImportances": [
+        0.03984540279489277,
+        0.11938729379072326,
+        0.062346488605150255,
+        0.06735014781559229,
+        0.04813008309109139,
+        0.07755352642941057,
+        0.05278303999025632,
+        0.04520142031966286,
+        0.031581637146557234,
+        0.0139281388427464,
+        0.0707305126529778,
+        0.043024190493895664,
+        0.10085356509838411,
+        0.08133949179839074,
+        0.06470608150637455,
+        0.08123897962389376
+    ]
+}
