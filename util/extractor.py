@@ -76,9 +76,12 @@ def hairExtractFeature(record):
 
 def extractAllFeatures(record):
     """Extract the remaining features, utilizing the new no hair images."""
+    # Progress bar print
+    progress_bar.render(len(output_csv_df),record.name)
     # Set file path
     image_fp = os.path.join(IMAGES_DIR, record["img_id"])
 
+    # Checks if a value is already filled out
     try:
         record["feat_hair"] # assumes NaN also means its been checked before with a bad result
         shouldExtract = False
@@ -107,12 +110,6 @@ def extractAllFeatures(record):
         try:
             hair_extraction = featurex.HairExtractor(image_mask)
             feature = hair_extraction.amountOfHairFeature()
-        except Exception as e:
-            print(f"ERROR: {e}")
-            record.at["feat_hair"] = float("nan")
-
-        # Attempt to save feature data
-        try:
             record.at["feat_hair"] = feature
         except Exception as e:
             print(f"ERROR: {e}")
@@ -121,9 +118,6 @@ def extractAllFeatures(record):
     # Every 100 images, save a copy to prevent wasted work
     if int(record.name) % 100 == 0:
         output_csv_df.to_csv(REL_OUTPUT_CSV_FP, index=False)
-
-    # Progress bar print
-    progress_bar.render(len(output_csv_df),record.name)
 
     return record
 
