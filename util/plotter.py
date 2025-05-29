@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib import colormaps as plt_cm
 from constants import p
 import os
 import json
@@ -60,7 +61,12 @@ def generate_plots(model_data: list[dict[str, Any]]):
         subplot.set_title(f"{model_name} ({model_feat_count} features)")
 
         # subplot.figure(figsize=(4, 4))
-        im = subplot.imshow(conf_matrix)
+        im = subplot.imshow(conf_matrix, cmap=plt_cm["summer"])
+        pprint.pprint(conf_matrix)
+
+        # print(f"---- {model_name} ({model_feat_count} features) -----")
+        # print("Confusion matrix:")
+        # pprint.pprint(conf_matrix)
 
         xlabels = ["False", "True"]
         ylabels = ["False", "True"]
@@ -74,11 +80,12 @@ def generate_plots(model_data: list[dict[str, Any]]):
         
         subplot.text(0, 0, conf_matrix[0, 0],
                     ha="center", va="center", color='r')
-        subplot.text(1, 0, conf_matrix[1, 0],
+        subplot.text(0, 1, conf_matrix[1, 0],
                     ha="center", va="center", color='r')
-        subplot.text(0, 1, conf_matrix[0, 1],
+        subplot.text(1, 0, conf_matrix[0, 1],
                     ha="center", va="center", color='r')
         subplot.text(1, 1, conf_matrix[1, 1],
+                    ha="center", va="center", color='r')
                     ha="center", va="center", color='r')
     
     fig.suptitle("Confusion matrices")

@@ -1,14 +1,15 @@
-from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score, roc_curve, auc
+from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score, roc_curve, auc, roc_auc_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import normalize, StandardScaler
 from utility import saveModel
 from constants import p
 import pandas as pd
 from dataclasses import dataclass
 from typing import Any
+import numpy as np
 from numpy.typing import NDArray
 import json
 import os
@@ -55,12 +56,13 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
     knn_model.fit(x_train, y_train)
 
     y_pred = knn_model.predict(x_test)
+    y_proba = knn_model.predict_proba(x_test)[:, 1]
 
     knn_confusion_matrix = confusion_matrix(y_test, y_pred)
     knn_accuracy = accuracy_score(y_test, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
+    roc_auc = roc_auc_score(y_test, y_proba)
 
     return ModelData(
         name="K-Nearest-Neighbors classifier",
@@ -80,12 +82,13 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
     decision_tree_model = decision_tree_model.fit(x_train, y_train)
 
     y_pred = decision_tree_model.predict(x_test)
+    y_proba = decision_tree_model.predict_proba(x_test)[:, 1]
 
     tree_confusion_matrix = confusion_matrix(y_test, y_pred)
     tree_accuracy = accuracy_score(y_test, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
+    roc_auc = roc_auc_score(y_test, y_proba)
 
     feature_importances = decision_tree_model.feature_importances_
 
@@ -103,18 +106,18 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
 
 
 def train_logistic_regression(x_train, x_test, y_train, y_test, features):
-    x_train, x_test = normalize(x_train), normalize(x_test)
 
-    logistic_model = LogisticRegression(solver="liblinear")  # liblinear is good for small binary datasets
+    logistic_model = LogisticRegression(solver="liblinear")
     logistic_model.fit(x_train, y_train)
 
     y_pred = logistic_model.predict(x_test)
+    y_proba = logistic_model.predict_proba(x_test)[:, 1]
 
     logistic_confusion_matrix = confusion_matrix(y_test, y_pred)
     logistic_accuracy = accuracy_score(y_test, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
+    roc_auc = roc_auc_score(y_test, y_proba)
 
     return ModelData(
         name="Logistic Regression model",
@@ -132,7 +135,7 @@ def train_logistic_regression(x_train, x_test, y_train, y_test, features):
 def train_models(
         data_frame: pd.DataFrame,
         features: list[str],
-        test_size: float = 0.3,
+        test_size: float = 0.2,
         knn_n_neighbors: int = 5,
         save_to_directory: str = "result/models/",
         save_knn_model_to: str = "KNN",
@@ -142,6 +145,13 @@ def train_models(
 
     if not os.path.exists(save_to_directory):
         os.makedirs(save_to_directory)
+
+    print(
+        "Amount of True vs False biopsed:",
+        len(DF[DF["biopsed"] == True]),
+        "false:",
+        len(DF[DF["biopsed"] == False])
+    )
 
     knn_model_dir = os.path.join(save_to_directory, "KNN/")
     tree_model_dir = os.path.join(save_to_directory, "decision_tree/")
@@ -198,7 +208,9 @@ def train_models(
 
 if __name__ == "__main__":
     DF = pd.read_csv(p("result/dataset3.csv"))
-    DF.dropna(inplace=True)
+    feature_columns = [col for col in DF.columns if col.startswith("feat_")]
+    print(feature_columns)
+    DF = DF.dropna(subset=feature_columns)
 
     _ = train_models(
         DF, features=["feat_compactness", "feat_multicolor"],
