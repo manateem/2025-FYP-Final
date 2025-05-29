@@ -5,10 +5,12 @@ Add global constants here
 """
 import os, sys
 
+
 PROJECT_NAME = "2025-FYP-Final"
 PROJECT_DIR = os.getcwd()
 if PROJECT_NAME not in PROJECT_DIR:
-    print(f"Wrong working directory! File must be ran from inside {PROJECT_NAME}")
+    print(f"[ERROR] Wrong working directory! File must be ran from inside {PROJECT_NAME}")
+    exit()
 
 
 while not PROJECT_DIR.endswith(PROJECT_NAME):

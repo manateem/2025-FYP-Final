@@ -1,3 +1,43 @@
+# Manateem Remarks
+2025-FYP-Final/
+├── data/
+│   ├── images/
+│   │   ├── PAT_8_15_820.png
+│   │   ......
+│   │   └── PAT_XXX_XXX_XXX.png
+│   ├── masks/
+│   │   ├── PAT_8_15_820_mask.png
+│   │   ......
+│   │   └── PAT_XXX_XXX_XXX_mask.png
+│   ├── noHair/
+│   │   ├── PAT_8_15_820.png
+│   │   ......
+│   │   └── PAT_XXX_XXX_XXX.png
+│   ├── metadata.csv
+│ 
+├── util/
+│   ├── __main__.py             # starting place for TA's :)
+│   ├── img_util.py             # basic image read and write functions
+│   ├── train_model.py          # model training
+│   ├── feature_extract_ex.py   # code for all the features that we use
+│   ├── utility.py              # a variety of useful utility files for processing
+│   ├── plotter.py              # script for plot creation
+│   ├── extractor.py            # extracts feature data from all images
+│   ......
+│   └── constants.py            # ensures that file paths are universal between machines
+│ 
+├── result/
+│   ├── result_baseline.csv     # your results on the baseline setup
+│   ├── result_extended.csv     # your results on the extended setup
+│   └── report.pdf      		# your report in PDF
+│ 
+├── main_demo.py		# demo script (reference setup, remove in your hand-in)
+├── main_baseline.py	# complete script (baseline setup)
+├── main_extended.py	# complete script (extended setup)
+├── dataset.csv    		# all image file names, ground-truth labels, and chosen features
+└── README.md
+
+
 # Projects in Data Science (2025)
 ## Overview
 ### result/logbook.md

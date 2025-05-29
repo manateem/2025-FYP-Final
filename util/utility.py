@@ -71,53 +71,6 @@ def saveModel(model, modelName, directory):
         os.makedirs(directory)
     joblib.dump(model, filepath)
 
-class HairExtractor:
-    def __init__(self, img):
-        self.img = img
-    
-    def countWhitePercentage(self, threshold=240):
-        """
-        Counts the number of white pixels in a grayscale image.
-
-        :param self.img: the image
-        :param threshold: (int) Intensity threshold to consider a pixel as "white".
-        
-        :returns: Percentage of white pixels in the image.
-        """
-        # Load the image in grayscale
-        # Create a mask of pixels above the threshold
-        white_mask = self.img >= threshold
-
-        # Count white pixels
-        white_pixel_count = np.sum(white_mask)
-        total_pixels = self.img.size
-        white_percentage = (white_pixel_count / total_pixels)
-
-        return white_percentage
-
-    def getHair(self, kernel_size=25, threshold=10):
-        # kernel for the morphological filtering
-        img_gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
-        
-        # perform the hat transform on the grayscale image
-        hat_img = cv2.morphologyEx(img_gray, cv2.MORPH_BLACKHAT, kernel) 
-        
-        
-        # threshold the hair contours
-        _, thresh = cv2.threshold(hat_img, threshold, 255, cv2.THRESH_BINARY)
-        
-        return thresh
-
-    def amountOfHairFeature(self, black_threshold: int = 50) -> float:
-        img_gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
-
-        _, thresh = cv2.threshold(img_gray, black_threshold, 255, cv2.THRESH_BINARY)
-
-        count_black_pxls = np.sum(thresh == 0)
-
-        return (count_black_pxls / thresh.size) * 10
-
 class DataPartitioner:
     """Splits data into training and testing data in lists that can be used for processing"""
     def __init__(self, seed):
@@ -169,10 +122,6 @@ if __name__ == "__main__":
     plt.imshow(extracted_img)
     plt.show()
 
-
-
-
-# Code that is deprecated, but I decided to save anyway
 def removeHair(img_org, img_gray, kernel_size=25, threshold=10, radius=3):
     # kernel for the morphological filtering
     kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (kernel_size, kernel_size))

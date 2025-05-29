@@ -7,6 +7,7 @@ import os
 import cv2
 import feature_extract_ex as features
 from utility import extract_lesion_mask
+import progress_bar
 
 TRAINING_IMAGES_DIR = p("data/noHair") #NOW THE IMAGES WITH NO HAIR
 #NOHAIR_DIR = p("data/noHair")
@@ -82,22 +83,17 @@ def extractFeaturesFromImage(record):
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_color"] = float("nan")
-    b = features.texture_analysis(image,image_mask)
+    b = features.get_color_uniformity(image,image_mask)
     try:
-        record["feat_contrast"] = b["glcm_contrast"]
+        record["feat_avg_lesion_color"] = b["average_color"]
     except Exception as e:
         print(f"ERROR: {e}")
         record["feat_contrast"] = float("nan")
     try:
-        record["feat_energy"] = b["glcm_energy"]
+        record["feat_var_lesion_color"] = b["score"]
     except Exception as e:
         print(f"ERROR: {e}")
-        record["feat_energy"] = float("nan")
-    try:
-        record["feat_homogeneity"] = b["glcm_homogeneity"]
-    except Exception as e:
-        print(f"ERROR: {e}")
-        record["feat_homogeneity"] = float("nan")
+        record["feat_contrast"] = float("nan")
 
     
     return record
@@ -108,8 +104,7 @@ def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def loadDataFrameWithFeatures(
-        write_csv_to: str | None = "result/UptoDateFeatures.csv"
-,
+        write_csv_to: str | None = "result/UptoDateFeatures.csv",
         truncate: int | None = None) -> pd.DataFrame:
     """
     Load a data frame from the metadata, with new
