@@ -241,11 +241,11 @@ if __name__ == "__main__":
 
     _ = train_models(
         DF, features=["feat_asymmetry", "feat_border_irregularity",
-            "feat_multiColorRate"],
-            save_to_directory="result/models/1_ABC_Classifiers"
+            "feat_colorUniformity","feat_homogeneity"],
+            save_to_directory="result/models/finalModel"
     )
 
-    _ = train_models(
-        DF, features=feature_columns,
-        save_to_directory="result/models/2_MegaClassifier"
-    )
+    # _ = train_models(
+    #     DF, features=feature_columns,
+    #     save_to_directory="result/models/2_MegaClassifier"
+    # )

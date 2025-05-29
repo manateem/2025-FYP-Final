@@ -3,6 +3,7 @@ from constants import p
 import pandas as pd
 import pprint
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import confusion_matrix
 
 
 def load_model(path_to_model_pkl):
@@ -11,22 +12,26 @@ def load_model(path_to_model_pkl):
 
 if __name__ == "__main__":
     DF = pd.read_csv(p("result/featuresEXTERNAL.csv"))
-    decision_tree_model = load_model(p("result/models/2_MegaClassifier/KNN/KNN.pkl"))
-    #print(type(decision_tree_model))
-    DF_first_3 = DF.head(7)
-    # DF_first_3["feat_asymmetry"] = pd.to_numeric(DF_first_3["feat_asymmetry"], errors="coerce")
+    knn_model = load_model(p("result/models/1_ABC_Classifiers/KNN/KNN.pkl"))
+    # DF["feat_asymmetry"] = pd.to_numeric(DF["feat_asymmetry"], errors="coerce")
 
-    feature_columns = [col for col in DF_first_3.columns if col.startswith("feat_")]
-    print(feature_columns)
-    X = DF_first_3[feature_columns]
+    feature_columns = [
+        "feat_asymmetry",
+        "feat_border_irregularity",
+        "feat_multiColorRate"
+    ]
+
+    X = DF[feature_columns]
 
     scaler = StandardScaler()
     X = scaler.fit_transform(X)
 
     #print(X)
-    Y = DF_first_3["BIOPSED"]
+    Y = DF["BIOPSED"]
 
-    Y_predicted = decision_tree_model.predict_proba(X)
+    Y_predicted = knn_model.predict_proba(X)
 
     pprint.pprint(Y_predicted)
     pprint.pprint(Y)
+    print()
+
