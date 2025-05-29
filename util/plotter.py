@@ -86,7 +86,6 @@ def generate_plots(model_data: list[dict[str, Any]]):
                     ha="center", va="center", color='r')
         subplot.text(1, 1, conf_matrix[1, 1],
                     ha="center", va="center", color='r')
-                    ha="center", va="center", color='r')
     
     fig.suptitle("Confusion matrices")
 
