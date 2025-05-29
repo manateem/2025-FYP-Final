@@ -9,6 +9,9 @@ from sklearn.metrics import (
     accuracy_score,
     precision_score
 )
+from matplotlib import pyplot as plt
+from matplotlib import colormaps as plt_cm
+import numpy as np
 
 
 def load_model(path_to_model_pkl):
@@ -22,7 +25,7 @@ def get_model_performance_on_extern_data(
         scale: bool = True):
     """
     Given a model, print the model's performance statistics
-    on an external dataset.
+    on the external dataset.
 
     :param path_to_model_pkl: Path to model pickle file
     :param model_name: Name of the model
@@ -37,7 +40,7 @@ def get_model_performance_on_extern_data(
     model = load_model(p(path_to_model_pkl))
 
     if feature_columns is None:
-        feature_columns = [feature for feature in DF if feature.startswith("feat_")]
+        feature_columns = [feature for feature in DF if feature.startswith("feat_")]  # type: ignore
 
     X = DF[feature_columns]
 
@@ -64,6 +67,7 @@ def get_model_performance_on_extern_data(
     print(f"Precision: {precision}")
 
     return {
+        "name": model_name,
         "confusion_matrix": conf_matrix,
         "accuracy": accuracy,
         "precision": precision,
@@ -82,9 +86,10 @@ if __name__ == "__main__":
         ("Logistic Regression Classifier - Every image feature", "result/models/2_MegaClassifier/logistic_regression/LogisticRegression.pkl"),
     ]
 
-
+    model_perfomance_analyses = []
 
     for model_name, model_file_path in models:
+        scale = "Decision Tree" in model_name
         feature_columns: list[str] | None
         if "ABC" in model_name:
             feature_columns = [
@@ -96,8 +101,52 @@ if __name__ == "__main__":
             # defaults to all features
             feature_columns = None
         
-        get_model_performance_on_extern_data(
+        model_perfomance_analyses.append(get_model_performance_on_extern_data(
             path_to_model_pkl=model_file_path,
             model_name=model_name,
-            feature_columns=feature_columns
-        )
+            feature_columns=feature_columns,
+            scale=scale
+        ))
+    
+    fig, axs = plt.subplots(nrows=2, ncols=3)
+    for i, model in enumerate(model_perfomance_analyses):
+        row_idx = i // 3
+        col_idx = i % 3
+
+        subplot = axs[row_idx, col_idx]
+
+        conf_matrix = np.array(model["confusion_matrix"])
+        model_name = model["name"]
+
+        subplot.set_title(model_name)
+
+        # subplot.figure(figsize=(4, 4))
+        im = subplot.imshow(conf_matrix, cmap=plt_cm["summer"])
+        # pprint.pprint(conf_matrix)
+
+        # print(f"---- {model_name} ({model_feat_count} features) -----")
+        # print("Confusion matrix:")
+        # pprint.pprint(conf_matrix)
+
+        xlabels = ["False", "True"]
+        ylabels = ["False", "True"]
+
+        subplot.set_xlabel("Predicted")
+        subplot.set_ylabel("Actual")
+
+        subplot.set_xticks([0, 1], labels=xlabels)
+        subplot.set_yticks([0, 1], labels=ylabels,
+                            rotation=90, ha="right", rotation_mode="anchor")
+        
+        subplot.text(0, 0, conf_matrix[0, 0],
+                    ha="center", va="center", color='r')
+        subplot.text(0, 1, conf_matrix[1, 0],
+                    ha="center", va="center", color='r')
+        subplot.text(1, 0, conf_matrix[0, 1],
+                    ha="center", va="center", color='r')
+        subplot.text(1, 1, conf_matrix[1, 1],
+                    ha="center", va="center", color='r')
+    
+    fig.suptitle("Confusion matrices of models on external dataset")
+
+    plt.show()
