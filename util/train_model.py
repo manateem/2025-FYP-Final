@@ -49,7 +49,7 @@ class ModelData:
             "truePositiveRate": self.true_positive_rate.tolist(),
             "areaUnderCurve": self.area_under_curve,
             "features": self.features,
-            "featureImportances": self.feature_importances.tolist() if self.feature_importances is not None else None
+            "featureImportances": self.feature_importances.tolist() if self.feature_importances is not None else None,
         }, indent=4)
 
 
