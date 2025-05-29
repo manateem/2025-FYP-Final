@@ -209,35 +209,58 @@ def convexity_score(mask):
 """Functions Written By Manateem Below"""
 
 def get_color_uniformity(img, mask):
-    try:
-        """Calculates the average color, and variance of a masked image, averaging the variances in each channel."""
-        masked_img = img.copy()
-        masked_img[mask==0] = 0
+    """
+    Calculates the average color (scalar) and standard deviation (as a measure of variance)
+    of a masked image region. The score is the average of standard deviations across RGB channels.
+    """
+    # Apply mask
+    masked_pixels = img[mask > 0]
 
-        summed = np.array([0,0,0])
-        pixel_count = 0
+    if masked_pixels.size == 0:
+        return {"score": 0, "average_color": 0}
 
-        columns = masked_img.shape[0]
-        rows = masked_img.shape[1]
-        for i in range(columns):
-            for j in range(rows):
-                if np.sum(masked_img[i][j]) != 0:
-                    summed += masked_img[i][j]
-                    pixel_count += 1
-        average = summed/pixel_count
+    # Compute mean color per channel, then average the channels to get a single scalar
+    average_color = np.mean(masked_pixels)  # Scalar: mean of all R, G, B values
 
-        variance_score = np.array([0,0,0]).astype('float64')
-        for i in range(columns):
-            for j in range(rows):
-                if np.sum(masked_img[i][j]) != 0:
-                    variance_score += np.power((masked_img[i][j]-average),2)
-        variance_score = np.sqrt(variance_score)
-        variance_score /= pixel_count
+    # Compute standard deviation per channel, then average
+    std_dev = np.std(masked_pixels, axis=0)
+    score = np.mean(std_dev)
 
-        return {"score":np.average(variance_score),"average_color":average}
-    except:
-        return None
+    return {"score": score, "average_color": average_color}
 
+def significant_color_count(img, mask, significance=0.05):
+    """DOES NOT WORK AS INTENDED CURRENTLY, WIP"""
+    
+    """Uses kmeans to procedurally increase the number of colors until a color becomes 'insignificant', in which the number of colors before this point is returned."""
+    """Assumes img that has already been masked, where non-lesion pixels are 0."""
+    """Significance dictates level at which below a color would be considered insignificant."""
+
+    safe_limit = 20 # just in case any unfortunate loop shenanigans occur
+
+    mask = color.rgb2gray(mask)
+    # (thresh, im_bw) = cv2.threshold(mask, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    # pixel_count = np.sum(im_bw)
+
+    pixel_count = np.sum(mask)
+
+    success_count = 1
+
+    for n in range(safe_limit):
+        n_colors = n+1
+        pixels = np.float32(img.reshape(-1, 3))
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 200, .1)
+        flags = cv2.KMEANS_RANDOM_CENTERS
+
+        _, labels, palette = cv2.kmeans(pixels, n_colors, None, criteria, 10, flags)
+        _, counts = np.unique(labels, return_counts=True)
+
+        for count in counts:
+            if count/pixel_count < significance:
+                return success_count
+        success_count += 1
+            
+    return success_count
+    
 def convexity_metrics(mask):
     try:
         mask_gray = cv2.cvtColor(mask,cv2.COLOR_BGR2GRAY)
@@ -297,66 +320,31 @@ def color_metrics(img, mask):
     masked_img[mask==0] = 0
     masked_gray = cv2.cvtColor(masked_img,cv2.COLOR_BGR2GRAY)
 
-    # Redness
-    # array_size = int(len(mask[mask != 0])*0.001)
-    # print(array_size)
-    # arr = [0]*array_size
-    # columns = masked_img.shape[0]
-    # rows = masked_img.shape[1]
-    # for i in range(columns):
-    #     for j in range(rows):
-    #         if np.sum(masked_img[i][j]) != 0:
-    #             if arr[0] < masked_img[i][j][0]:
-    #                 arr[0] = masked_img[i][j][0]
-    #                 insertionSort(arr)
-    # avg_max_redness = sum(arr)/len(arr)
-
-    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min(), "avg_max_redness": 0}
-
-
-class HairExtractor:
-    def __init__(self, mask):
-        self.mask = mask
+    return {"max_brightness": masked_gray.max(), "min_brightness": masked_gray[masked_gray != 0].min()}
+def get_avg_max_redness(img, mask, percentile=99.9):
+    """
+    Calculates the average of the top 0.1% red channel values within a masked region.
     
-    def countWhitePercentage(self, threshold=240):
-        """
-        Counts the number of white pixels in a grayscale image.
-
-        :param self.mask: the image
-        :param threshold: (int) Intensity threshold to consider a pixel as "white".
+    Args:
+        img (np.ndarray): RGB image (H x W x 3).
+        mask (np.ndarray): Binary or boolean mask (H x W), non-zero means active pixel.
+        percentile (float): The percentile threshold (default is 99.9 for top 0.1%).
         
-        :returns: Percentage of white pixels in the image.
-        """
-        # Load the image in grayscale
-        # Create a mask of pixels above the threshold
-        white_mask = self.mask >= threshold
+    Returns:
+        float: Average of top red values within the mask.
+    """
+    # Extract red channel values where the mask is active
+    red_channel = img[:, :, 0]
+    masked_red = red_channel[mask > 0]
 
-        # Count white pixels
-        white_pixel_count = np.sum(white_mask)
-        total_pixels = self.mask.size
-        white_percentage = (white_pixel_count / total_pixels)
+    if masked_red.size == 0:
+        return 0.0  # Handle case where mask is empty
 
-        return white_percentage
+    # Determine threshold for top 0.1%
+    threshold = np.percentile(masked_red, percentile)
 
-    def getHair(self, kernel_size=25, threshold=10):
-        # kernel for the morphological filtering
-        mask_gray = cv2.cvtColor(self.mask, cv2.COLOR_RGB2GRAY)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
-        
-        # perform the hat transform on the grayscale image
-        hat_mask = cv2.morphologyEx(mask_gray, cv2.MORPH_BLACKHAT, kernel) 
-        
-        
-        # threshold the hair contours
-        _, thresh = cv2.threshold(hat_mask, threshold, 255, cv2.THRESH_BINARY)
-        
-        return thresh
+    # Select values above threshold
+    top_red_values = masked_red[masked_red >= threshold]
 
-    def amountOfHairFeature(self, black_threshold: int = 50) -> float:
-        mask_gray = cv2.cvtColor(self.mask, cv2.COLOR_RGB2GRAY)
-
-        _, thresh = cv2.threshold(mask_gray, black_threshold, 255, cv2.THRESH_BINARY)
-
-        count_black_pxls = np.sum(thresh == 0)
-
-        return (count_black_pxls / thresh.size) * 10
+    # Compute and return average
+    return float(np.mean(top_red_values))

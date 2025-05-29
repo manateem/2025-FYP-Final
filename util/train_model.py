@@ -1,14 +1,15 @@
-from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, accuracy_score, roc_curve, auc
+from sklearn.metrics import accuracy_score, confusion_matrix, recall_score, f1_score, roc_curve, auc, roc_auc_score, precision_score
 from sklearn.model_selection import GroupKFold, train_test_split, cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import normalize
+from sklearn.preprocessing import normalize, StandardScaler
 from utility import saveModel
 from constants import p
 import pandas as pd
 from dataclasses import dataclass
 from typing import Any
+import numpy as np
 from numpy.typing import NDArray
 import json
 import os
@@ -22,13 +23,15 @@ LR_MODEL_DIR = p("models/logistic_regression")
 class ModelData:
     name: str
     model: Any
-    accuracy: int
     confusion_matrix: NDArray
     false_positive_rate: NDArray
     true_positive_rate: NDArray
     area_under_curve: float
     features: list[str]
     feature_importances: NDArray | None
+    accuracy: float | None = None
+    precision: float | None = None
+    recall: float | None = None
 
     @property
     def num_features(self):
@@ -39,28 +42,35 @@ class ModelData:
             "name": self.name,
             "numFeatures": self.num_features,
             "accuracy": self.accuracy,
+            "precision": self.precision,
+            "recall": self.recall,
             "confusionMatrix": self.confusion_matrix.tolist(),
             "falsePositiveRate": self.false_positive_rate.tolist(),
             "truePositiveRate": self.true_positive_rate.tolist(),
             "areaUnderCurve": self.area_under_curve,
             "features": self.features,
-            "featureImportances": self.feature_importances.tolist() if self.feature_importances is not None else None
+            "featureImportances": self.feature_importances.tolist() if self.feature_importances is not None else None,
         }, indent=4)
 
 
 def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5) -> ModelData:
-    x_train, x_test = normalize(x_train), normalize(x_test)
+    scaler = StandardScaler()
+    x_train = scaler.fit_transform(x_train)
+    x_test = scaler.transform(x_test)
 
     knn_model = KNeighborsClassifier(n_neighbors=n_neighbors)
     knn_model.fit(x_train, y_train)
 
     y_pred = knn_model.predict(x_test)
+    y_proba = knn_model.predict_proba(x_test)[:, 1]
 
     knn_confusion_matrix = confusion_matrix(y_test, y_pred)
     knn_accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
+    roc_auc = roc_auc_score(y_test, y_proba)
 
     return ModelData(
         name="K-Nearest-Neighbors classifier",
@@ -71,22 +81,32 @@ def train_knn_model(x_train, x_test, y_train, y_test, features, n_neighbors = 5)
         true_positive_rate=true_positive_rate,
         area_under_curve=roc_auc,
         features=features,
-        feature_importances=None
+        feature_importances=None,
+        precision=precision,
+        recall=recall
     )
 
 
-def train_decision_tree(x_train, x_test, y_train, y_test, features):
+def train_decision_tree(
+        x_train, x_test,
+        y_train, y_test,
+        features):
     decision_tree_model = DecisionTreeClassifier()
     decision_tree_model = decision_tree_model.fit(x_train, y_train)
 
     y_pred = decision_tree_model.predict(x_test)
+    y_proba = decision_tree_model.predict_proba(x_test)[:, 1]
 
     tree_confusion_matrix = confusion_matrix(y_test, y_pred)
     tree_accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
+    roc_auc = roc_auc_score(y_test, y_proba)
 
+    # Group K-Fold for feature importances
+    dt_importances = []
     feature_importances = decision_tree_model.feature_importances_
 
     return ModelData(
@@ -98,23 +118,30 @@ def train_decision_tree(x_train, x_test, y_train, y_test, features):
         true_positive_rate=true_positive_rate,
         area_under_curve=roc_auc,
         features=features,
-        feature_importances=feature_importances
+        feature_importances=feature_importances,
+        precision=precision,
+        recall=recall
     )
 
 
 def train_logistic_regression(x_train, x_test, y_train, y_test, features):
-    x_train, x_test = normalize(x_train), normalize(x_test)
+    scaler = StandardScaler()
+    x_train = scaler.fit_transform(x_train)
+    x_test = scaler.transform(x_test)
 
-    logistic_model = LogisticRegression(solver="liblinear")  # liblinear is good for small binary datasets
+    logistic_model = LogisticRegression(solver="liblinear")
     logistic_model.fit(x_train, y_train)
 
     y_pred = logistic_model.predict(x_test)
+    y_proba = logistic_model.predict_proba(x_test)[:, 1]
 
     logistic_confusion_matrix = confusion_matrix(y_test, y_pred)
     logistic_accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
 
-    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(false_positive_rate, true_positive_rate)
+    false_positive_rate, true_positive_rate, _ = roc_curve(y_test, y_proba)
+    roc_auc = roc_auc_score(y_test, y_proba)
 
     return ModelData(
         name="Logistic Regression model",
@@ -125,14 +152,16 @@ def train_logistic_regression(x_train, x_test, y_train, y_test, features):
         true_positive_rate=true_positive_rate,
         area_under_curve=roc_auc,
         features=features,
-        feature_importances=None
+        feature_importances=None,
+        precision=precision,
+        recall=recall
     )
 
 
 def train_models(
         data_frame: pd.DataFrame,
         features: list[str],
-        test_size: float = 0.3,
+        test_size: float = 0.2,
         knn_n_neighbors: int = 5,
         save_to_directory: str = "result/models/",
         save_knn_model_to: str = "KNN",
@@ -142,6 +171,13 @@ def train_models(
 
     if not os.path.exists(save_to_directory):
         os.makedirs(save_to_directory)
+
+    # print(
+    #     "Amount of True vs False biopsed:",
+    #     len(DF[DF["biopsed"] == True]),
+    #     "false:",
+    #     len(DF[DF["biopsed"] == False])
+    # )
 
     knn_model_dir = os.path.join(save_to_directory, "KNN/")
     tree_model_dir = os.path.join(save_to_directory, "decision_tree/")
@@ -197,24 +233,19 @@ def train_models(
 
 
 if __name__ == "__main__":
-    DF = pd.read_csv(p("result/dataset3.csv"))
-    DF.dropna(inplace=True)
+    DF = pd.read_csv(p("result/features.csv"))
+    feature_columns = [col for col in DF.columns if col.startswith("feat_")]
+    print(feature_columns)
+    # run DF = DF.dropna(subset=feature_columns)
+    DF = DF.dropna(subset=feature_columns)
 
     _ = train_models(
-        DF, features=["feat_compactness", "feat_multicolor"],
-        save_to_directory="result/models/2features"
+        DF, features=["feat_asymmetry", "feat_border_irregularity",
+            "feat_multiColorRate"],
+            save_to_directory="result/models/1_ABC_Classifiers"
     )
 
     _ = train_models(
-        DF, features=["feat_asymmetry", "feat_compactness", "feat_multicolor"],
-        save_to_directory="result/models/3features"
+        DF, features=feature_columns,
+        save_to_directory="result/models/2_MegaClassifier"
     )
-
-    _ = train_models(
-        DF, features=["feat_hair", "feat_asymmetry", "feat_compactness", "feat_multicolor"],
-        save_to_directory="result/models/4features"
-    )
-
-    # print(knn_confusion_matrix)
-    # print(decision_tree_confusion_matrix)
-    # print(log_conf_matrix)

@@ -7,13 +7,9 @@ import os
 import cv2
 import feature_extract_ex as features
 from utility import extract_lesion_mask
-import progress_bar
 
-TRAINING_IMAGES_DIR = p("data/noHair") #NOW THE IMAGES WITH NO HAIR
-#NOHAIR_DIR = p("data/noHair")
-MASKS_DIR = p("data/masks")
-current = 1
-total = 2200
+TRAINING_IMAGES_DIR = p("data/noHairEXTERNAL") #NOW THE IMAGES WITH NO HAIR
+MASKS_DIR = p("data/masksEXTERNAL")
 # Feature extraction
 def extractFeaturesFromImage(record):
     """
@@ -28,7 +24,9 @@ def extractFeaturesFromImage(record):
         - [x] Extract feature "border"
         - [x] Extract feature "color"
     """
-    image_path = os.path.join(TRAINING_IMAGES_DIR, record["img_id"])
+
+    #data\noHairEXTERNAL\ISIC_0024306.jpg
+    image_path = os.path.join(TRAINING_IMAGES_DIR, f"{record['img_id']}.jpg")
     print(f"Opening image {image_path}...")
 
 
@@ -38,7 +36,7 @@ def extractFeaturesFromImage(record):
         return record
 
     image = cv2.imread(image_path)
-    #image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     #image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
     # hair feature
@@ -47,12 +45,27 @@ def extractFeaturesFromImage(record):
     # remove hair
     #_, _, image = removeHair(image, image_gray)
     # load the image mask
-    image_mask_filename = record["img_id"].replace(".png", "_mask.png")
+    image_mask_filename = f"{record['img_id']}.png"
     image_mask_path = os.path.join(MASKS_DIR, image_mask_filename)
-    image_mask = cv2.imread(image_mask_path)
     image_maskG = cv2.imread(image_mask_path,cv2.IMREAD_GRAYSCALE)
+    image_mask = cv2.imread(image_mask_path)
 
     # calculate asymmetry
+    # try:
+    #     record["feat_asymmetry"] = features.rotation_asymmetry(image_maskG,5)["average"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_asymmetry"] = float("nan")
+    # try:
+    #     record["feat_border_irregularity"] = features.get_compactness(image_mask,2)["score"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_border_irregularity"] = float("nan")
+    # try:
+    #     record["feat_multiColorRate"] = features.get_multicolor_rate(image, image_mask,1)
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_multiColorRate"] = float("nan")
     # try:
     #     record["feat_convexity"] = features.convexity_score(image_mask)
     # except Exception as e:
@@ -63,7 +76,7 @@ def extractFeaturesFromImage(record):
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_avgColor"] = float("nan")
-    #a = features.convexity_metrics(image_mask)
+    # a = features.convexity_metrics(image_mask)
     # try:
     #     record["feat_convexVariance"] = a["variance"]
     # except Exception as e:
@@ -79,11 +92,7 @@ def extractFeaturesFromImage(record):
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_convexAverage"] = float("nan")
-    # try:
-    #     record["feat_color"] = features.get_multicolor_rate(image_rgb, image_mask, 2)
-    # except Exception as e:
-    #     print(f"ERROR: {e}")
-    #     record["feat_color"] = float("nan")
+    
     # b = features.texture_analysis(image,image_mask)
     # try:
     #     record["feat_contrast"] = b["glcm_contrast"]
@@ -101,7 +110,7 @@ def extractFeaturesFromImage(record):
     #     print(f"ERROR: {e}")
     #     record["feat_homogeneity"] = float("nan")
     # try:
-    #     c = features.get_color_uniformity(image,image_mask)
+    #     c = features.get_color_uniformity(image,image_maskG)
     # except:
     #     record["feat_colorUniformity"] = float("nan")
     #     record["feat_averageColor"] = float("nan")
@@ -121,17 +130,32 @@ def extractFeaturesFromImage(record):
     # except Exception as e:
     #     print(f"ERROR: {e}")
     #     record["feat_averageRedness"] = float("nan")
-    # The randomest noise you will ever witness
+    
+    # a = features.color_metrics(image, image_maskG)
+    # try:
+    #     record["feat_maxBrightness"] = a["max_brightness"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_maxBrightness"] = float("nan")
+    # try:
+    #     record["feat_minBrightness"] = a["min_brightness"]
+    # except Exception as e:
+    #     print(f"ERROR: {e}")
+    #     record["feat_minBrightness"] = float("nan")
+    # ADDING RANDOM NOISE :D
     for i in range(1,11):
         record[f"random{i}"] = np.random.rand()
+
+    
     return record
+
 
 def addFeatures(data_frame: pd.DataFrame) -> pd.DataFrame:
     return data_frame.apply(extractFeaturesFromImage, axis=1)
 
 
 def loadDataFrameWithFeatures(
-        write_csv_to: str | None = "result/features.csv"
+        write_csv_to: str | None = "result/featuresEXTERNAL.csv"
 ,
         truncate: int | None = None,
         start: int | None = None) -> pd.DataFrame:
@@ -149,7 +173,7 @@ def loadDataFrameWithFeatures(
     :returns: A pd.DataFrame with the data from the metadata.csv,
     and the features extracted from the images.
     """
-    DF  = pd.read_csv(p("result/features.csv"))
+    DF  = pd.read_csv(p("result/featuresEXTERNAL.csv"))
 
     # limit data in data frame only to images which have a mask
     # masked_images = pd.DataFrame(data = {
@@ -173,4 +197,4 @@ def loadDataFrameWithFeatures(
 
 
 if __name__ == "__main__":
-    DF = loadDataFrameWithFeatures(write_csv_to="result/features2rand.csv")
+    DF = loadDataFrameWithFeatures(write_csv_to="result/featuresEXTERNAL2.csv")
