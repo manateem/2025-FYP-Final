@@ -237,25 +237,19 @@ def train_models(
         logistic_model_data
     )
 
-
-
-if __name__ == "__main__":
+def train_all_models():
     DF = pd.read_csv(p("result/features.csv"))
     feature_columns = [col for col in DF.columns if col.startswith("feat_")]
-    print(feature_columns)
-    # run DF = DF.dropna(subset=feature_columns)
     DF = DF.dropna(subset=feature_columns)
 
-    # _ = train_models(
-    #     DF, features=["feat_asymmetry", "feat_border_irregularity",
-    #         "feat_colorUniformity","feat_homogeneity"],
-    #         save_to_directory="result/models/finalModel"
-    # )
-
-    # _ = train_models(
-    #     DF, features=feature_columns,
-    #     save_to_directory="result/models/2_MegaClassifier"
-    # )
+    _ = train_models(
+        DF, features=["feat_asymmetry", "feat_border_irregularity", "feat_multiColorRate"],
+            save_to_directory="result/models/1_ABC_Classifiers"
+    )
+    _ = train_models(
+        DF, features=feature_columns,
+        save_to_directory="result/models/2_MegaClassifier"
+    )
 
     DF2 = pd.read_csv(p("result/features_binarized.csv"))
     DF2.drop(["patient_id", "lesion_id", "region", "diagnostic", "img_id"], axis=1, inplace=True)
@@ -263,3 +257,12 @@ if __name__ == "__main__":
         DF2, features=[col for col in DF2.columns if col != "biopsed" and not col.startswith("random")],
         save_to_directory="result/models/3_UltraClassifiers"
     )
+
+    _ = train_models(
+        DF, features=["feat_asymmetry", "feat_border_irregularity",
+            "feat_colorUniformity","feat_homogeneity"],
+            save_to_directory="result/models/4_finalModel"
+    )
+
+if __name__ == "__main__":
+    train_all_models()

@@ -157,7 +157,7 @@ def extractFeature(record, options):
 def saveDataFrame(df, fp):
     df.to_csv(fp, index=False)
 
-if __name__ == "__main__":
+def extractAllFeatures():
     # Create the final features file if not already existing
     if not os.path.isfile(OUTPUT_CSV_FP):
         metadata_df = pd.read_csv(METADATA_FP)
@@ -274,3 +274,6 @@ if __name__ == "__main__":
         sleep(0.5)
         output_csv_df = output_csv_df.apply(extractFeature, args=(opt,), axis=1)
         output_csv_df.to_csv(REL_OUTPUT_CSV_FP, index=False)
+
+if __name__ == "__main__":
+    extractAllFeatures()

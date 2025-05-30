@@ -1,8 +1,8 @@
 # Manateem Remarks
-This is how our project structure looks like and how you should structure yourself.
+This is how our project structure looks like and how you should structure the data folder yourself.
 ```
 2025-FYP-group/
-├── data/                               # please structure you data folder as so
+├── data/                               # please structure your data folder as so
 │   ├── images/
 │   │   ├── PAT_8_15_820.png
 │   │   ......
@@ -18,7 +18,7 @@ This is how our project structure looks like and how you should structure yourse
 │   ├── metadata.csv
 │ 
 ├── util/
-│   ├── __main__.py             # starting place for TA's :)
+│   ├── __init__.py             # starting place for TA's :)
 │   ├── img_util.py             # basic image read and write functions
 │   ├── data_binarizer.py       # changes true and false values to 0 and 1 for dataframes
 │   ├── getFeaturesEXTERNAL.py  # extracts feature data specifically for external dataset
@@ -32,6 +32,7 @@ This is how our project structure looks like and how you should structure yourse
 │   ├── plotter.py              # script for plot creation
 │   ├── extractor.py            # extracts feature data from all images, 
 │   |                           # allowing for reproducibility of our results
+│   ├── visualize_models.ipynb  # used to visualize the results from the model after processing
 │   ......
 │   └── constants.py            # ensures that file paths are universal between machines
 │ 
@@ -39,12 +40,16 @@ This is how our project structure looks like and how you should structure yourse
 │   ├── features_binarized.csv  # features for mega-classifier (metadata and image features)
 │   ├── features.csv            # features for general classifier use
 │   ├── featuresEXTERNAL.csv    # features of external data
+│   ├── logbook.md              # logbook of major decisions, unfortunately not well used
+│   ├── todo.md                 # to-do reminders for the group, unfortunately not too well used
 │   ├── models                  # models, where you can find their .pkl file and results/metrics of each model
 │   │   ├── 1_ABC_Classifiers
 │   │   ├── 2_MegaClassifier
-│   │   └── finalModel
+│   │   ├── 3_UltraClassifiers
+│   │   ├── 4_finalModel
+│   │   └── model_performance.md  # a summary of performance metrics of all models
 │   ├── Plots                   # used for report
-│   │   ├── PAT_8_15_820_mask.png
+│   │   ├── ...
 │   └── report.pdf      		# our report in PDF
 │ 
 ├── main_demo.py		# demo script (reference setup, remove in your hand-in)
@@ -53,6 +58,12 @@ This is how our project structure looks like and how you should structure yourse
 ├── dataset.csv    		# all image file names, ground-truth labels, and chosen features
 └── README.md
 ```
+## Language and Definitions
+Whenever we refer to a particular 'classifier', we refer mainly to the model using a certain set of features. This is why we have folders titled as 'classifiers' under the `models/` folder. Each 'classifier' is infact a group of 3 different trained classifiers, logistic regression, decision tree, and KNN.
+The "ABC Classifier" is the group of classifiers utilizing only 3 features, aka our baseline
+The "Mega-classifier" is the group of classifiers utilizing only 16 features, which is compatible with the external dataset used as it only uses image features, while still maximizing how many features it has.
+The "Ultra-classifier" is the group of classifiers utilizing 33 features, including both metadata and image features, but is unfortunately incompatible with our external dataset.
+The "final/reduced model" is the model (and group of classifiers) using 4 features that were selected after analyzing performance metrics from ONLY GroupKFold.
 
 # Projects in Data Science (2025)
 ## Overview

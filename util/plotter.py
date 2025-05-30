@@ -145,6 +145,8 @@ def generate_plots(model_data: list[dict[str, Any]]):
 
     plt.savefig(os.path.join(PLOTS_DIR, "feature_importances.png"))
 
+def generate_all_plots():
+    generate_plots(get_model_data(model_stats_files()))
 
 if __name__ == "__main__":
-    generate_plots(get_model_data(model_stats_files()))
+    generate_all_plots()
