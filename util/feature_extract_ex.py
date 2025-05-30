@@ -348,3 +348,50 @@ def get_avg_max_redness(img, mask, percentile=99.9):
 
     # Compute and return average
     return float(np.mean(top_red_values))
+
+class HairExtractor:
+    def __init__(self, img):
+        self.img = img
+    
+    def countWhitePercentage(self, threshold=240):Add commentMore actions
+        """
+        Counts the number of white pixels in a grayscale image.
+
+        :param self.img: the image
+        :param threshold: (int) Intensity threshold to consider a pixel as "white".
+        
+        :returns: Percentage of white pixels in the image.
+        """
+        # Load the image in grayscale
+        # Create a mask of pixels above the threshold
+        white_mask = self.img >= threshold
+
+        # Count white pixels
+        white_pixel_count = np.sum(white_mask)
+        total_pixels = self.img.size
+        white_percentage = (white_pixel_count / total_pixels)
+
+        return white_percentage
+
+    def getHair(self, kernel_size=25, threshold=10):
+        # kernel for the morphological filtering
+        img_gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
+        
+        # perform the hat transform on the grayscale image
+        hat_img = cv2.morphologyEx(img_gray, cv2.MORPH_BLACKHAT, kernel) 
+        
+        
+        # threshold the hair contours
+        _, thresh = cv2.threshold(hat_img, threshold, 255, cv2.THRESH_BINARY)
+        
+        return thresh
+
+    def amountOfHairFeature(self, black_threshold: int = 50) -> float:
+        img_gray = cv2.cvtColor(self.img, cv2.COLOR_RGB2GRAY)
+
+        _, thresh = cv2.threshold(img_gray, black_threshold, 255, cv2.THRESH_BINARY)
+
+        count_black_pxls = np.sum(thresh == 0)
+
+        return (count_black_pxls / thresh.size) * 10
