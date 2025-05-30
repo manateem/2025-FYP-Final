@@ -68,6 +68,9 @@ The "final/reduced model" is the model (and group of classifiers) using 4 featur
 ## Extracting Features
 Features were already extracted by our group, so if you could like to extract these features yourself, please delete the features.csv file, and the code will handle it for you.
 
+### External Features
+You may run getFeaturesEXTERNAL.py to extract features from the specified external dataset from the report.
+
 # Projects in Data Science (2025)
 ## Overview
 ### result/logbook.md

@@ -1,0 +1,5 @@
+Matthew: Did most of the feature extraction code, lots of code refactoring and consolidation (utility.py and extractor.py), progress bar, good amount of writing mid-way
+Hjalte: Overleaf structure, significant part of writing in the beginning, saving features in appropriate format, extracted data from external dataset, discussion
+Laci: Wrote hair feature extraction code, head code refactorer, plotting and inserting plots, predict.py, a lot of model training, wrote data_binarizer.py, 
+Valantis: Significant writing in the end/results, most of the model training and understanding of classifiers, groupkfold, synthesized the final reduced model
+Martin: Wrote part of the abstract and helped with some plotting
