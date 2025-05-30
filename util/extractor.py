@@ -120,7 +120,6 @@ def extractFeature(record, options, output_csv_df):
         except Exception as e:
             print(f"[ERROR] Failed to read {image_fp}; Chosen behavior: exit(); Reason: {e}")
             exit()
-        image_gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
         # Read the mask
         image_mask_filename = record["img_id"].replace(".png", "_mask.png")
@@ -133,8 +132,6 @@ def extractFeature(record, options, output_csv_df):
                 given_args[i] = image_mask
             if x == "image": 
                 given_args[i] = image
-            if x == "image_gray": 
-                given_args[i] = image_gray
 
         # Extract the feature (and skip if this field is already filled)
         feature = None
