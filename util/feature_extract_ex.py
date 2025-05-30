@@ -353,7 +353,7 @@ class HairExtractor:
     def __init__(self, img):
         self.img = img
     
-    def countWhitePercentage(self, threshold=240):Add commentMore actions
+    def countWhitePercentage(self, threshold=240):
         """
         Counts the number of white pixels in a grayscale image.
 
