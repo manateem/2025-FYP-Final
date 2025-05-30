@@ -65,6 +65,9 @@ The "Mega-classifier" is the group of classifiers utilizing only 16 features, wh
 The "Ultra-classifier" is the group of classifiers utilizing 33 features, including both metadata and image features, but is unfortunately incompatible with our external dataset.
 The "final/reduced model" is the model (and group of classifiers) using 4 features that were selected after analyzing performance metrics from ONLY GroupKFold.
 
+## Extracting Features
+Features were already extracted by our group, so if you could like to extract these features yourself, please delete the features.csv file, and the code will handle it for you.
+
 # Projects in Data Science (2025)
 ## Overview
 ### result/logbook.md

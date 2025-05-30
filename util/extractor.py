@@ -19,7 +19,7 @@ METADATA_FP = p("data/metadata.csv")
 REL_OUTPUT_CSV_FP = "result/features.csv"
 OUTPUT_CSV_FP = p(REL_OUTPUT_CSV_FP)
 
-def hairExtractFeature(record, output_csv_df):
+def hairExtractFeature(record, output_csv_df, forceHairFeature=False):
     """Unique to extracting hair and outputting a unique hairless image to data/noHair/"""
     shouldExtract = False
     try:
@@ -39,7 +39,7 @@ def hairExtractFeature(record, output_csv_df):
     image_fp = os.path.join(IMAGES_DIR, record["img_id"])
 
     # Read the image
-    if shouldExtract:
+    if shouldExtract or forceHairFeature:
         print(f"[INFO] Reading image {image_fp}...")
         try:
             image = cv2.imread(image_fp)
@@ -155,7 +155,7 @@ def extractFeature(record, options, output_csv_df):
 def saveDataFrame(df, fp):
     df.to_csv(fp, index=False)
 
-def extractAllFeatures():
+def extractAllFeatures(forceHairFeature):
     # Create the final features file if not already existing
     if not os.path.isfile(OUTPUT_CSV_FP):
         metadata_df = pd.read_csv(METADATA_FP)
@@ -183,7 +183,7 @@ def extractAllFeatures():
     sleep(0.5)
     print("...")
     sleep(0.5)
-    output_csv_df = output_csv_df.apply(hairExtractFeature, args=(output_csv_df,), axis=1)
+    output_csv_df = output_csv_df.apply(hairExtractFeature, args=(output_csv_df,forceHairFeature), axis=1)
     output_csv_df.to_csv(REL_OUTPUT_CSV_FP, index=False)
 
     # List of features that will be iterated through
