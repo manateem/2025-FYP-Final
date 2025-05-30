@@ -67,7 +67,7 @@ def hairExtractFeature(record, output_csv_df, forceHairFeature=False):
         output_csv_df.to_csv(REL_OUTPUT_CSV_FP, index=False)
 
     # Save the inpainted image
-    if shouldExtract:
+    if shouldExtract or forceHairFeature:
         _, _, img_out = utility.removeHair(image, image_gray)
         noHairOutputPath = os.path.join(NOHAIR_DIR, record["img_id"])
         if not os.path.isfile(noHairOutputPath):

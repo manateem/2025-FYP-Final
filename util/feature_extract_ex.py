@@ -335,9 +335,7 @@ def get_avg_max_redness(img, mask, percentile=99.9):
     """
     # Extract red channel values where the mask is active
     red_channel = img[:, :, 0]
-    print("1 try")
     masked_red = red_channel[mask > 0]
-    print("1 success")
 
     if masked_red.size == 0:
         return 0.0  # Handle case where mask is empty
@@ -346,9 +344,7 @@ def get_avg_max_redness(img, mask, percentile=99.9):
     threshold = np.percentile(masked_red, percentile)
 
     # Select values above threshold
-    print("2 try")
     top_red_values = masked_red[masked_red >= threshold]
-    print("2 success")
 
     # Compute and return average
     return float(np.mean(top_red_values))
