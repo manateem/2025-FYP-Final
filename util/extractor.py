@@ -177,9 +177,6 @@ def extractAllFeatures():
 
     # First, we want to extract hair values, then append to our output csv.
     output_csv_df = pd.read_csv(OUTPUT_CSV_FP)
-    print(OUTPUT_CSV_FP)
-    print(output_csv_df)
-    print("~~~~~~~~~~~~~~")
     print("...")
     sleep(0.5)
     print("...")
