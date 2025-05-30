@@ -19,7 +19,7 @@ METADATA_FP = p("data/metadata.csv")
 REL_OUTPUT_CSV_FP = "result/features.csv"
 OUTPUT_CSV_FP = p(REL_OUTPUT_CSV_FP)
 
-def hairExtractFeature(record):
+def hairExtractFeature(record, output_csv_df):
     """Unique to extracting hair and outputting a unique hairless image to data/noHair/"""
     shouldExtract = False
     try:
@@ -78,7 +78,7 @@ def hairExtractFeature(record):
 
     return record
 
-def extractFeature(record, options):
+def extractFeature(record, options, output_csv_df):
     """Extract the feature, utilizing the new no hair images."""
     # Verify options
     if options.get("feat_name") == None: # should be a string
@@ -188,7 +188,7 @@ def extractAllFeatures():
     sleep(0.5)
     print("...")
     sleep(0.5)
-    output_csv_df = output_csv_df.apply(hairExtractFeature, axis=1)
+    output_csv_df = output_csv_df.apply(hairExtractFeature, args=(output_csv_df,), axis=1)
     output_csv_df.to_csv(REL_OUTPUT_CSV_FP, index=False)
 
     # List of features that will be iterated through
@@ -275,7 +275,7 @@ def extractAllFeatures():
         sleep(0.5)
         print("...")
         sleep(0.5)
-        output_csv_df = output_csv_df.apply(extractFeature, args=(opt,), axis=1)
+        output_csv_df = output_csv_df.apply(extractFeature, args=(opt,output_csv_df), axis=1)
         output_csv_df.to_csv(REL_OUTPUT_CSV_FP, index=False)
 
 if __name__ == "__main__":
