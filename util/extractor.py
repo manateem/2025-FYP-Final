@@ -136,6 +136,7 @@ def extractFeature(record, options, output_csv_df):
         # Extract the feature (and skip if this field is already filled)
         feature = None
         try:
+            print(f"WHAT I SHAPPENING: {subscript}")
             if subscript == None:
                 record.at[feat_name] = feature_fn(*given_args)
             else:
@@ -262,6 +263,7 @@ def extractAllFeatures():
             "feat_name": "get_avg_max_redness",
             "feature_fn": featurex.get_color_uniformity,
             "arguments": ["image","image_mask"],
+            "subscript": None
         },
     ]
     # Then use these new noHair images to extract the rest of our features.
